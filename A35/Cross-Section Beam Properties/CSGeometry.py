@@ -1,6 +1,7 @@
 
 """
-Stringer locations in [z,y, angle] locations (angle is orientation wrt z-axis)
+Stringer locations in [z,y, angle] locations
+(angle is rotation wrt z-axis for centroid, MOI)
 With [0, 0] at LE of aileron
 
 inputs:
