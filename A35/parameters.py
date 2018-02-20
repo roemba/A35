@@ -17,3 +17,4 @@ class parameters:
     maxupwarddeflection = 26 #Max_upward_deflection	q	26	deg
     actuatorload = 9.17e3 #Actuator_load	P	9.17	kN
     aerodynamicload = 4.53e3 #Aerodynamic_load	q	4.53	kN/m
+    youngsmodulus = 73.1e9 #Youngs modulus E 73.1 GPa
