@@ -47,7 +47,7 @@ class stringerPositions:
                     tempAngle = distFromTE / radius
                     y_loc = 0. - np.cos(tempAngle)
                     z_loc = radius - np.sin(tempAngle)
-                    outAngle = tempAngle
+                    outAngle = -1 * tempAngle           # negative for simplified centroid calc
 
             else:       # distFromTE < hypo
                 y_loc = 0. - distFromTE * np.sin(angle)
