@@ -12,7 +12,7 @@ n_st
 
 import numpy as np
 
-class Geometry:
+class CSGeometry:
     """
 
     Take h, C_a, n_st to compute stringer coordinates
@@ -25,7 +25,7 @@ class Geometry:
         radius = h/2.
         triangleLongSection = C_a - radius
         semiCircle = radius * np.pi
-        hypo = np.sqrt(radius^2 + triangleLongSection^2)        # Compute length straight part of aileron
+        hypo = np.sqrt(radius**2 + triangleLongSection**2)        # Compute length straight part of aileron
         angle = np.arctan(radius / triangleLongSection)         # Compute half-angle
         length = semiCircle + 2.*hypo                           # Total length cross-section
 
@@ -65,7 +65,7 @@ class Geometry:
     def straightSkin(self, C_a, h, t_sk):
         radius = h/2.
         long = C_a - radius
-        hypo = np.sqrt(long^2 + radius^2)
+        hypo = np.sqrt(long**2 + radius**2)
         straightArea = hypo * t_sk
         #dist_z = radius/2           # distance to z axis from centroid ----- due to symmetry irrelevant
         dist_y = long/2. + radius    # distance to y axis from centroid

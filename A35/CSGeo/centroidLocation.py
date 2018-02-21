@@ -6,7 +6,7 @@ compute
 """
 
 import numpy as np
-import CSGeometry as CS
+import CSGeometry.CSGeometry as CS
 
 class Centroid:
     """
