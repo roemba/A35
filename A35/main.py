@@ -37,5 +37,9 @@ for x in xtab:
 # plt.plot(xtab, ytab)
 # plt.show()
 
-centroidPosition = Centroid()
-print centroidPosition.computeCentroid(parameters.chord, parameters.height, parameters.skinthickness, parameters.sparthickness, parameters.stiffenerthickness, parameters.stiffenerwidth, parameters.stiffenerheight,parameters.stiffenernumber )
+# Setting centroid position for simple calling etc.
+# Setting reference coordinate system at LE
+# (z coincides with chord, positive in direction of flight)
+# (y positive upward flight direction)
+centoid_z = - Centroid.computeCentroid(parameters.chord, parameters.height, parameters.skinthickness, parameters.sparthickness, parameters.stiffenerthickness, parameters.stiffenerwidth, parameters.stiffenerheight,parameters.stiffenernumber )
+centroid_y = 0.

@@ -19,7 +19,7 @@ class Centroid:
     Computes centroid with LE->TE positive z
 
     """
-
+    @staticmethod
     def computeCentroid(self, C_a, h, t_sk, t_sp, t_st, w_st, h_st, n_st):
         # stringerCoords is an array in the form [n, z, y, angle] x (n_st)
         # centroid_z_pos to be found, assume symmetry about z: centroid_y_pos = 0
