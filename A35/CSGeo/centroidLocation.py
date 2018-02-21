@@ -27,7 +27,7 @@ class Centroid:
         Vol = 0.
 
         # Spar
-        tempArea, tempOff = CS.spar(h, t_sp)
+        tempArea, tempOff = CS.spar(h, t_sp, t_sk)
         Area += tempArea
         Vol += tempArea * tempOff
 
@@ -42,8 +42,8 @@ class Centroid:
         Vol += 2. * tempArea * tempOff
 
         # Stringers (yey)
-        tempArea, tempOff = CS.stringer(w_st, h_st, t_st)
-        stringerCoords = CS.stringerPos(h, C_a, n_st)
+        tempArea, tempOff = CS.stringer(w_st, h_st, t_st, t_sk)
+        stringerCoords = CS.stringerPos(h, C_a, n_st, t_sk)
         for stringer in stringerCoords:
             #stringerNumber = stringer[0]           # not used
             stringer_z = stringer[1]

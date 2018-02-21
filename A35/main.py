@@ -1,6 +1,7 @@
 from parameters import parameters
 from beamTheory.main import beamTheory
 from Utilities.coordinateSwap import coordinateSwap
+from CSGeo.centroidLocation import Centroid
 import matplotlib as mplt
 import matplotlib.pyplot as plt
 from CSGeo import *
@@ -35,3 +36,6 @@ for x in xtab:
 
 # plt.plot(xtab, ytab)
 # plt.show()
+
+centroidPosition = Centroid()
+print centroidPosition.computeCentroid(parameters.chord, parameters.height, parameters.skinthickness, parameters.sparthickness, parameters.stiffenerthickness, parameters.stiffenerwidth, parameters.stiffenerheight,parameters.stiffenernumber )
