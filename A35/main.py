@@ -1,6 +1,7 @@
 
 from parameters import parameters
 from beamTheory.main import beamTheory
+from CSGeo import *
 import numpy as np
 
 beam = beamTheory()
