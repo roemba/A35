@@ -10,6 +10,24 @@ call
 
 class areaMomentOfInertia:
 
+    """
+    Order:
+    Stringer:
+    genericStringer: compute AMOI in terms of geometry of stringer only
+    rotationEffect: compute rotation effect on stringer (apply to genericStringer)
+    steinerTerm: compute steinerTerms
+    totalStringer: combine rotationEffects and steinerTerm
+
+    Spar:
+    sparMOI: compute AMOI and steinerTerms
+
+    Skin:
+    circleMOI: compute AMOI and steinerTerms
+    straightPart: compute AMOI and steinerTerms
+
+    """
+
+
     def genericStringer(self, w_st, h_st, t_st):
 
         a, cy = g.stringer(w_st, h_st, t_st)
@@ -26,7 +44,7 @@ class areaMomentOfInertia:
 
         return I_zz, I_yy, cy
 
-    def rotationEffects(self, I_zz, I_yy, angle):
+    def rotationEffect(self, I_zz, I_yy, angle):
 
 
     def getAMOI(self):
