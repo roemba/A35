@@ -1,3 +1,5 @@
+import numpy as np
+
 class parameters:
     chord = 0.547 #C_a	0.547	m
     span = 2.771 #l_a	2.771	m
@@ -14,7 +16,7 @@ class parameters:
     stiffenernumber = 17. #Stiffener_Number	n_st	17	-
     verticaldisplacementhinge1 = 11.03/100. #Vertical_displacement_hinge_1	d_1	11.03	cm
     verticaldisplacementhinge3 = 16.42/100. #Vertical_displacement_hinge_3	d_3	16.42	cm
-    maxupwarddeflection = 26 #Max_upward_deflection	q	26	deg
+    maxupwarddeflection = np.radians(26.) #Max_upward_deflection	q	26	deg
     actuatorload = 9.17e3 #Actuator_load	P	9.17	kN
     aerodynamicload = 4.53e3 #Aerodynamic_load	q	4.53	kN/m
     youngsmodulus = 73.1e9 #Youngs modulus E 73.1 GPa

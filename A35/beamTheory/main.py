@@ -1,7 +1,8 @@
 import numpy as np
 
 class beamTheory:
-    def staticEquilibrium(self, E, I, c_a, l_a, x_1, x_2, x_3, x_a, P, q, h, d_3, d_1):
+    @staticmethod
+    def staticEquilibrium(E, I, c_a, l_a, x_1, x_2, x_3, x_a, P, q, h, d_3, d_1):
         coefficientMatrix = np.matrix([[1., 0., 1., 0., 1., 0., 0., 0.],
                                        [0., 1., 0., 1., 0., 1., 0., 0.],
                                        [0., x_2-x_1, 0., 0., 0., x_a/2., 0., 0.],
@@ -34,7 +35,8 @@ class beamTheory:
 
         return solutionMatrix
 
-    def bendingMomentAndShearForcesForX(self, A_y, A_z, B_y, B_z, C_y, R_z, x_3, x_2, x_1, x_a, q, P, x):
+    @staticmethod
+    def bendingMomentAndShearForcesForX(A_y, A_z, B_y, B_z, C_y, R_z, x_3, x_2, x_1, x_a, q, P, x):
 
         m_zz = q*(1./2.)*x**2.
         v_y = q*x
