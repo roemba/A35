@@ -59,7 +59,6 @@ class CSGeometry:
                 outAngle = angle
 
             finalArray[i] = [i, z_loc, y_loc, outAngle]
-            print finalArray[i]
 
         #plt.plot(finalArray[:,1], finalArray[:,2])
         #plt.show()

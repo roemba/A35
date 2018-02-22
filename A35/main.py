@@ -2,6 +2,7 @@ from parameters import parameters
 from beamTheory.main import beamTheory
 from Utilities.coordinateSwap import coordinateSwap
 from CSGeo.centroidLocation import Centroid
+from CSGeo.areaMomentOfInertia import areaMomentOfInertia as AMOI
 import matplotlib as mplt
 import matplotlib.pyplot as plt
 from CSGeo import *
@@ -41,5 +42,11 @@ for x in xtab:
 # Setting reference coordinate system at LE
 # (z coincides with chord, positive in direction of flight)
 # (y positive upward flight direction)
-centoid_z = - Centroid.computeCentroid(parameters.chord, parameters.height, parameters.skinthickness, parameters.sparthickness, parameters.stiffenerthickness, parameters.stiffenerwidth, parameters.stiffenerheight,parameters.stiffenernumber )
+centroid_z = - Centroid.computeCentroid(parameters.chord, parameters.height, parameters.skinthickness, parameters.sparthickness, parameters.stiffenerthickness, parameters.stiffenerwidth, parameters.stiffenerheight, parameters.stiffenernumber)
 centroid_y = 0.
+print centroid_z
+
+# Area moment of inertias
+I_zz, I_yy = AMOI.getAMOI(parameters.chord, parameters.height, parameters.stiffenerwidth, parameters.stiffenerheight, parameters.stiffenernumber, parameters.stiffenerthickness, parameters.skinthickness, parameters.sparthickness, centroid_z)
+print "I_zz", I_zz * 1000.**4
+print "I_yy", I_yy * 1000.**4
