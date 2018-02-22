@@ -17,7 +17,7 @@ class FEM:
 
     @staticmethod
     def crossSection(h, C_a, n_st):
-        radius = h /2.
+        radius = h / 2.
         longS = C_a - radius
         semi = radius * np.pi
         hypo = np.sqrt(radius**2 + longS**2)
@@ -26,72 +26,124 @@ class FEM:
         pitch = length / n_st
         return radius, longS, semi, hypo, angle, length, pitch
 
+
+
+    @staticmethod
+    def generalSector(n_booms, stringerPitch, startDist, endDist, length, minBooms, sectorNumber):
+        """
+        General sector boom spacing function that places booms centered about stringers
+        with two additional booms in the boundary panels
+
+        :return:                n_boom, normPitch, startPitch, endPitch, stringerAmount
+        """
+        if sectorNumber != '4':
+            stringerAmount = int(length / stringerPitch)
+
+            # First solve issues with less than minimum booms
+            if n_booms - 4 > minBooms:
+                if n_booms < stringerAmount + 4:
+                    n_booms = stringerAmount + 4  # Add four for two additional at each corner case
+                    print 'Sector', sectorNumber, 'does not have the minimum amount of booms; it is now:', n_booms
+            else:
+                n_booms = minBooms + 4
+                print 'Sector', sectorNumber, 'does not have the minimum amount of booms; it is now:', n_booms
+
+            # Then solve such that booms are placed at the stringers
+            key = False
+            if (n_booms - 4) % stringerAmount != 0:
+                n_booms -= (n_booms - 4) % stringerAmount
+                key = True
+            if ((n_booms - 4) / stringerAmount) % 2 == 0:
+                n_booms -= stringerAmount
+                key = True
+            if key == True:
+                print 'Simple program is not advanced enough for complicated mesh-making; ' \
+                      'reducing Sector', sectorNumber, 'boom amount to:', n_booms
+
+            # From first to last boom, spacing is equal at: stringerPitch * stringerAmount / (n_booms - 4)
+            # this changes for the first set to     startDist / ((boomsPerStringer + 3) / 2)
+            # and for the last set it changes to    endDist / ((boomsPerStringer + 3) / 2)
+
+            boomsPerStringer = (n_booms - 4) / stringerAmount
+
+            normPitch = stringerPitch * stringerAmount / (n_booms - 4)
+            startPitch = startDist / ((boomsPerStringer + 3) / 2)
+            endPitch = endDist / ((boomsPerStringer + 3) / 2)
+
+        else:
+            normPitch = length / n_booms
+            startPitch = 0
+            endPitch = 0
+            stringerAmount = 0
+
+        return n_booms, normPitch, startPitch, endPitch, stringerAmount
+
+
+
     @staticmethod
     def sector_1(n_booms, stringerPitch, hypo):
         """
-        Sector 1: TE to negative y connection spar
+        Sector 1, 3: TE to y connection spar
         """
+
+        name = '1, 3'
+        minBooms = 0
         stringerAmount = int(hypo / stringerPitch)
+        endDist = hypo - stringerPitch * (stringerAmount - 0.5)
+        startDist = stringerPitch / 2
 
-        if n_booms < stringerAmount:  # check that boom amount is at least the amount of stringers
-            n_booms = stringerAmount
-            print 'Sectors 1 and 3 do not have the minimum amount of booms; it is now:', n_booms
-
-        # note that the total distance to be divided should be (stringerAmount - 1) * stringerPitch + stringerPitch/2
-        # which leaves out the residual towards boom in the spar:
-        lastDist = hypo - stringerPitch * (stringerAmount - 0.5)
-
-        # check if n_sector_1 % stringerAmount
-        if n_booms % stringerAmount != 0:
-            n_booms -= n_booms % stringerAmount
-        if (n_booms / stringerAmount) % 2 == 0:
-            n_booms -= stringerAmount
-            print 'Simple program not advanced enough for complicated mesh-making; reducing ' \
-                  'sector 1 and 3 boom amount to:', n_booms
-
-        # Where until last boom (near spar), spacing is equal at: stringerPitch * stringerAmount / n_sector_1
-        # this changes for the last set to ((n_sector_1 / stringerAmount) - 1) lastDist / 2
-        normPitch = stringerPitch * stringerAmount / n_booms
-        lastPitch = lastDist / ((n_booms / stringerAmount - 1) / 2)
+        n_booms, normPitch, startPitch, endPitch, stringerAmount = FEM.generalSector(n_booms, stringerPitch, startDist,
+                                                                                     endDist, hypo, minBooms, name)
 
         print 'sector 1, 3'
-        print n_booms, normPitch, lastPitch
-        return n_booms, normPitch, lastPitch, stringerAmount
+        print n_booms, normPitch, startPitch, endPitch, stringerAmount
+        return n_booms, normPitch, startPitch, endPitch, stringerAmount
+
+
 
     @staticmethod
     def sector_2(n_booms, stringerPitch, hypo, semi, stringersIn1):
         """
         Sector 2: Semi-circular LE
         """
-        startDist = stringerPitch * (stringersIn1 + 1) - hypo
-
-        # small angle approximation is required for linearization of inter-boom skin
-        # which leads to a minimum of 18 skin panels..
-        # check number of booms to equal 17 or more first:
-        if n_booms < 17:
-            n_booms = 17
-            print 'To allow linearization of panels between the booms, 18 skin panels are required;' \
-                  'the minimum boom count is thus:', n_booms
+        name = '2'
+        minBooms = 17   # small angle approximation requires 18 panels for 180 degrees
 
         # now check for spacing things
         # As with sector 1, 3: require skin-booms symmetrically about stringers
         # first: get stringers in section...
+        startDist = stringerPitch * (stringersIn1 + 1) - hypo
         stringerAmount = int((semi + startDist) / stringerPitch)
+        endDist = startDist     # Due to symmetry
 
-        if n_booms % stringerAmount != 0:
-            n_booms -= n_booms % stringerAmount
-        if (n_booms / stringerAmount) % 2 == 0:
-            n_booms -= stringerAmount
-            print 'Simple program not advanced enough for complicated mesh-making; reducing ' \
-                  'sector 2 boom amount to:', n_booms
-
-        normPitch = stringerPitch * stringerAmount / n_booms
-        startEndPitch = startDist / ((n_booms / stringerAmount - 1) / 2)
+        n_booms, normPitch, startPitch, endPitch, stringerAmount = FEM.generalSector(n_booms, stringerPitch, startDist,
+                                                                                         endDist, semi + startDist, minBooms, name)
 
         print 'sector 2'
-        print n_booms, normPitch, startEndPitch
+        print n_booms, normPitch, startPitch, endPitch, stringerAmount
+        return n_booms, normPitch, startPitch, endPitch, stringerAmount
 
-        return n_booms, normPitch, startEndPitch
+
+
+    @staticmethod
+    def sector_4(n_booms, height):
+        """
+        Sector 4: Spar
+        """
+        name = '4'
+        minBooms = 0
+        stringerPitch = None
+
+        startDist = 0
+        endDist = 0
+
+        n_booms, normPitch, startPitch, endPitch, stringerAmount = FEM.generalSector(n_booms, stringerPitch, startDist,
+                                                                                     endDist, height, minBooms, name)
+
+        print 'sector 4'
+        print n_booms, normPitch, startPitch, endPitch, stringerAmount
+        return n_booms, normPitch, startPitch, endPitch, stringerAmount
+
 
 
     @staticmethod
@@ -111,26 +163,38 @@ class FEM:
 
         # Decision time:
         # Each stringer has an amount of skin-booms on each side, equal spacing within (pitch/2) of itself
+        # Each boundary condition (except spar?) contains two additional booms
+
+        outputArray = np.zeros((4, 5))
 
         # Check each sector value to match spacing of stringers as equally as possible
-        # Sectors 1, 3:
-        n_sector_1, normPitch_1, lastPitch_1, stringersIn1 = FEM.sector_1(n_sector_1, stringerPitch, hypo)
+        # Sectors 1, 3:n_booms, normPitch, startPitch, endPitch, stringerAmount
+
+        n_sector_1, normPitch_1, startPitch_1, endPitch_1, stringersIn1 = FEM.sector_1(n_sector_1, stringerPitch, hypo)
+        n_sector_3, normPitch_3, endPitch_3, startPitch_3, stringersIn3 =\
+            n_sector_1, normPitch_1, startPitch_1, endPitch_1, stringersIn1
 
         # Sector 2:
-        n_sector_2, normPitch_2, lastPitch_2 = FEM.sector_2(n_sector_2, stringerPitch, hypo, semi, stringersIn1)
+        n_sector_2, normPitch_2, startPitch_2, endPitch_2, stringersIn2 = \
+            FEM.sector_2(n_sector_2, stringerPitch, hypo, semi, stringersIn1)
+
+        # Sector 4:
+        n_sector_4, normPitch_4, startPitch_4, endPitch_4, stringersIn4 = FEM.sector_4(n_sector_4, h)
 
 
+        # Sector 1, 3:
+        outputArray[0] = n_sector_1, normPitch_1, startPitch_1, endPitch_1, stringersIn1
+        outputArray[2] = n_sector_3, normPitch_3, startPitch_3, endPitch_3, stringersIn3
 
-        # Hey guys, this shit isn't finished yet. far from it even
+        outputArray[1] = n_sector_2, normPitch_2, startPitch_2, endPitch_2, stringersIn2
 
+        # Sector 4:
+        outputArray[3] = n_sector_4, normPitch_4, startPitch_4, endPitch_4, stringersIn4
 
-
-
-        outputArray = np.array([])
         print ''
         return outputArray
 
-a = FEM.discretization(18, 17, 0, 0.547, 0.225, 17)
-b = FEM.discretization(77, 52, 0, 0.547, 0.225, 17)
+print FEM.discretization(18, 17, 5, 0.547, 0.225, 17)
+#b = FEM.discretization(77, 52, 5, 0.547, 0.225, 17)
 
 
