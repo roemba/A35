@@ -8,16 +8,17 @@ import matplotlib.pyplot as plt
 from CSGeo import *
 import numpy as np
 
-reactionForces = beamTheory.staticEquilibrium(parameters.youngsmodulus, 0.000014925648, parameters.chord,
+reactionForces = beamTheory.staticEquilibrium(parameters.youngsmodulus, 0.000014925648, 0.000014925648, parameters.chord,
                                               parameters.span,
                                               parameters.xlocation1, parameters.xlocation2,
                                               parameters.xlocation3, parameters.d12, parameters.actuatorload,
                                               parameters.aerodynamicload,
                                               parameters.height, parameters.verticaldisplacementhinge3,
-                                              parameters.verticaldisplacementhinge1).A1
+                                              parameters.verticaldisplacementhinge1, parameters.maxupwarddeflection).A1
 
 ytab = []
 xtab = np.linspace(0., parameters.span, num=500)
+# xtab = [0.0765]
 for x in xtab:
     externalForcesArray = beamTheory.bendingMomentAndShearForcesForX(reactionForces[0], reactionForces[1],
                                                                      reactionForces[2],
@@ -26,14 +27,24 @@ for x in xtab:
                                                                      parameters.xlocation3, parameters.xlocation2,
                                                                      parameters.xlocation1, parameters.d12,
                                                                      parameters.aerodynamicload,
-                                                                     parameters.actuatorload, x)
+                                                                     parameters.actuatorload, parameters.chord,
+                                                                     parameters.height, parameters.maxupwarddeflection,
+                                                                     x)
+
+    torque = beamTheory.calculateTorqueForX(parameters.aerodynamicload, parameters.actuatorload, reactionForces[5],
+                                            reactionForces[1], reactionForces[0], reactionForces[3], reactionForces[2],
+                                            reactionForces[4], parameters.chord, parameters.height,
+                                            parameters.maxupwarddeflection,
+                                            parameters.xlocation3, parameters.xlocation2, parameters.xlocation1,
+                                            parameters.d12,
+                                            parameters.height / 2., x)
 
     m_zz_cs, m_yy_cs = coordinateSwap.APtoCS(externalForcesArray[1], externalForcesArray[0],
                                              parameters.maxupwarddeflection)
     v_z_cs, v_y_cs = coordinateSwap.APtoCS(externalForcesArray[3], externalForcesArray[2],
                                            parameters.maxupwarddeflection)
     internalForcesArray = [m_yy_cs, m_zz_cs, v_y_cs, v_z_cs]
-    ytab.append(internalForcesArray[0])
+    ytab.append(torque)
 
 # plt.plot(xtab, ytab)
 # plt.show()
@@ -50,3 +61,4 @@ print centroid_z
 I_zz, I_yy = AMOI.getAMOI(parameters.chord, parameters.height, parameters.stiffenerwidth, parameters.stiffenerheight, parameters.stiffenernumber, parameters.stiffenerthickness, parameters.skinthickness, parameters.sparthickness, centroid_z)
 print "I_zz", I_zz * 1000.**4
 print "I_yy", I_yy * 1000.**4
+>>>>>>> 7f06039c9ea557ed80c007e956d494254998ee94
