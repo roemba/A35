@@ -6,7 +6,7 @@ class stringerGeo:
     Borrowed stringerPos function from CSGeometry to have this standalone for call and output
 
     Tested and true. Array output has [pitch, z, y, boom area] for z and y coordinates. pitch and boom area are
-    assumed constants; in loop the boom area may be modified to match 
+    assumed constants; in loop the boom area may be modified to match
     z and y are positive according to reference frame (z in dir of flight, y upwards)
     Reference point for axis system is at Leading Edge.
     """
@@ -51,8 +51,5 @@ class stringerGeo:
                 outAngle = angle
 
             finalArray[i] = [centerSpacing, - z_loc, y_loc, stringerGeo.boomArea(w_st, h_st, t_st)]    #, outAngle]
-            print finalArray[i]
 
         return finalArray
-
-a = stringerGeo.stringerPos(0.225, 0.547, 17, 0.02, 0.015, 0.0012)
