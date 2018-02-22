@@ -10,7 +10,9 @@ Essetially Steiner Term
 class numbericalMOI:
 
     """
-    Inputs z_centroid, y_centroid, [z_boom, y_boom, boom_area, [k, l, m]]
+    Inputs: z_centroid, y_centroid, [z_boom, y_boom, boom_area, [k, l, m]]
+
+    Outputs: I_zz, I_yy, I_zy
     """
     @staticmethod
     def getMOI(z_c, y_c, boomArray):
@@ -25,6 +27,6 @@ class numbericalMOI:
         I_yy = np.sum(arrayI_yy)
 
         # Due to symmetry
-        #I_zy = 0.
+        I_zy = 0.
 
-        return I_zz, I_yy
+        return I_zz, I_yy, I_zy
