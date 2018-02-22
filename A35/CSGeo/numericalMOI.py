@@ -10,15 +10,21 @@ Essetially Steiner Term
 class numbericalMOI:
 
     """
-    Inputs z_centroid, y_centroid, z_boom, y_boom, boom_area
+    Inputs z_centroid, y_centroid, [z_boom, y_boom, boom_area, [k, l, m]]
     """
     @staticmethod
-    def getMOI(z_c, y_c, z, y, b_a):
+    def getMOI(z_c, y_c, boomArray):
 
-        #distance from centroid
-        d =
+        arrayI_zz = boomArray[2]*((boomArray[1]-y_c)**2.)
+        arrayI_yy = boomArray[2]*((boomArray[0]-z_c)**2.)
 
-        I_zz = b_a*((y-y_c)**2.)
-        I_yy = b_a*((z-z_c)**2.)
+        #print arrayI_zz
+        #print arrayI_yy
+
+        I_zz = sum(arrayI_zz)
+        I_yy = sum(arrayI_yy)
+
+        # Due to symmetry
+        #I_zy = 0.
 
         return I_zz, I_yy
