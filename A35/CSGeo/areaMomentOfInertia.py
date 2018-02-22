@@ -36,11 +36,11 @@ class areaMomentOfInertia:
 
         area, cy = g.stringer(w_st, h_st, t_st, t_sk)
 
-        I_zz_b = (((t_st)**3)*w_st)/12. + (((h_st-t_st)**3)*t_st)/12.
-        I_yy_b = (((t_st**3.)*(h_st-t_st))/12.) + (((w_st**3)*t_st)/12.)
+        I_zz_b = (h_st-t_st)**3 * t_st / 12. + t_st**3 * w_st / 12.
+        I_yy_b = t_st**3 * (h_st-t_st) / 12. + w_st**3 * t_st / 12.
 
         #Steiner Term
-        I_zz_s = (((cy-(t_st/2.))**2)*t_st*w_st) + ((((h_st-t_st)/2.)-cy)**2)*(h_st-t_st)*t_st
+        I_zz_s = (h_st - t_st) * t_st * (cy - (h_st + t_st)/2.)**2 + w_st * t_st * (cy - t_st/2.)**2
         I_yy_s = 0.
 
         I_zz = I_zz_b + I_zz_s
@@ -55,6 +55,7 @@ class areaMomentOfInertia:
         # Verified by hand to match
         I_zz = (I_zz_old + I_yy_old) / 2. + (I_zz_old - I_yy_old) * np.cos(2.*angle)/2.
         I_yy = (I_zz_old + I_yy_old) / 2. - (I_zz_old - I_yy_old) * np.cos(2.*angle)/2.
+
         return I_zz, I_yy
 
     @staticmethod
@@ -158,7 +159,7 @@ class areaMomentOfInertia:
             y_loc = stringer[2]
             angle = stringer[3]
 
-            I_zz += areaMomentOfInertia.stringerMOI(w_st, h_st, t_st, t_sk, z_loc, y_loc, angle, z_centroid)[0]
-            I_yy += areaMomentOfInertia.stringerMOI(w_st, h_st, t_st, t_sk, z_loc, y_loc, angle, z_centroid)[1]
+            #I_zz += areaMomentOfInertia.stringerMOI(w_st, h_st, t_st, t_sk, z_loc, y_loc, angle, z_centroid)[0]
+            #I_yy += areaMomentOfInertia.stringerMOI(w_st, h_st, t_st, t_sk, z_loc, y_loc, angle, z_centroid)[1]
         
         return I_zz, I_yy
