@@ -21,8 +21,8 @@ class numbericalMOI:
         #print arrayI_zz
         #print arrayI_yy
 
-        I_zz = sum(arrayI_zz)
-        I_yy = sum(arrayI_yy)
+        I_zz = np.sum(arrayI_zz)
+        I_yy = np.sum(arrayI_yy)
 
         # Due to symmetry
         #I_zy = 0.
