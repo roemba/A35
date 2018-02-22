@@ -3,11 +3,11 @@ import numpy as np
 """
 
 Area Moment Of Inertia (output in m^4)
-call
+Essetially Steiner Term
 
 """
 
-class areaMomentOfInertia:
+class numbericalMOI:
 
     """
     Inputs z_centroid, y_centroid, z_boom, y_boom, boom_area
