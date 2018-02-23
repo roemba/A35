@@ -44,7 +44,7 @@ for x in xtab:
     v_z_cs, v_y_cs = coordinateSwap.APtoCS(externalForcesArray[3], externalForcesArray[2],
                                            parameters.maxupwarddeflection)
     internalForcesArray = [m_yy_cs, m_zz_cs, v_y_cs, v_z_cs]
-    ytab.append(torque)
+    ytab.append(internalForcesArray[1])
 
 # plt.plot(xtab, ytab)
 # plt.show()
@@ -61,4 +61,3 @@ print centroid_z
 I_zz, I_yy = AMOI.getAMOI(parameters.chord, parameters.height, parameters.stiffenerwidth, parameters.stiffenerheight, parameters.stiffenernumber, parameters.stiffenerthickness, parameters.skinthickness, parameters.sparthickness, centroid_z)
 print "I_zz", I_zz * 1000.**4
 print "I_yy", I_yy * 1000.**4
->>>>>>> 7f06039c9ea557ed80c007e956d494254998ee94
