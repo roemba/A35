@@ -12,17 +12,20 @@ class numericalMOI:
     """
 
 
-    Inputs: z_centroid, y_centroid, [z_boom, y_boom, boom_area, k, l, m]
+    Inputs: z_centroid, y_centroid, [z_boom, y_boom, boom_area, [k, pnltype], [l, pnltype], [m, pnltype]]
     Outputs: I_zz, I_yy, I_zy
     """
     @staticmethod
     def getMOI(z_c, y_c, boomArray):
 
-        arrayI_zz = boomArray[2]*((boomArray[1]-y_c)**2.)
-        arrayI_yy = boomArray[2]*((boomArray[0]-z_c)**2.)
-        arrayI_zy = boomArray[2]*((boomArray[1]-y_c)*(boomArray[0]-z_c))
-        #print arrayI_zz
-        #print arrayI_yy
+        arrayI_zz = []
+        arrayI_yy = []
+        arrayI_zy = []
+
+        for i in range(0, len(boomArray)):
+            arrayI_zz.append(boomArray[i][2]*((boomArray[i][1]-y_c)**2.))
+            arrayI_yy.append(boomArray[i][2]*((boomArray[i][0]-z_c)**2.))
+            arrayI_zy.append(boomArray[i][2]*((boomArray[i][1]-y_c)*(boomArray[i][0]-z_c)))
 
         I_zz = np.sum(arrayI_zz)
         I_yy = np.sum(arrayI_yy)
@@ -35,4 +38,3 @@ class numericalMOI:
 
         return I_zz, I_yy, I_zy
 
-print numericalMOI.getMOI(5, 6, [[0, 1, 2, 3], [0, 1, 2, 3], [5, 6, 7, 8]])
