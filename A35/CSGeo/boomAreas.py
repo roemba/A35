@@ -8,7 +8,14 @@ class boomAreas:
     I_zz = 0.
 
     """
-    input = [z, y, A, k, l, (m)]
+    boomArray = [z, y, A, [k, connection_type], [l, type], [(m), type]]
+    where z = z-coordinate,
+    y = y-coordinate,
+    A = boom area,
+    k = index of first connected boom
+    l = index of second connected boom
+    m = (optional) index of third connected boom
+    connection_type = "skin" or "spar"
     
     """
     def __init__(self, boomArray, m_y, m_z, I_yy, I_zz):
@@ -18,21 +25,29 @@ class boomAreas:
         self.I_yy = I_yy
         self.I_zz = I_zz
 
-    def calculateBoomAreas(self, thickness):
+    def calculateBoomAreas(self, spar_thickness, skin_thickness):
         for index, boom in self.boomArray:
             boomArea = 0.
             ownDistanceToNeutralAxis = self.getDistanceToNeutralAxis(index)
 
             for i in range(3, 6):
-                if boom[i] is not None:
-                    distanceToConnectedBoom = self.getSkinDistance(index, boom[i])
-                    connectedBoomDistanceToNeutralAxis = self.getDistanceToNeutralAxis(boom[i])
+                if boom[i][0] is not None:
+                    distanceToConnectedBoom = self.getSkinDistance(index, boom[i][0])
+                    connectedBoomDistanceToNeutralAxis = self.getDistanceToNeutralAxis(boom[i][0])
 
                     print connectedBoomDistanceToNeutralAxis/ownDistanceToNeutralAxis
-                    boomArea += self.calculateBoomArea(thickness, distanceToConnectedBoom,
-                                                       connectedBoomDistanceToNeutralAxis/ownDistanceToNeutralAxis)
+                    if boom[i][1] == "spar":
+                        boomArea += self.calculateBoomArea(spar_thickness, distanceToConnectedBoom,
+                                                           connectedBoomDistanceToNeutralAxis/ownDistanceToNeutralAxis)
+                    else:
+                        boomArea += self.calculateBoomArea(skin_thickness, distanceToConnectedBoom,
+                                                           connectedBoomDistanceToNeutralAxis/ownDistanceToNeutralAxis)
 
-            print boomArea
+            print index, boomArea
+            self.boomArray[index][2] = boomArea
+
+        return self.boomArray
+
 
     def getSkinDistance(self, index_boom_1, index_boom_2):
         boom1 = self.boomArray[index_boom_1]
