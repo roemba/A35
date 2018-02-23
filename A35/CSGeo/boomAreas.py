@@ -39,10 +39,6 @@ class boomAreas:
         boom2 = self.boomArray[index_boom_2]
         return math.sqrt((boom2[0]-boom1[0])**2. + (boom2[1]-boom1[1])**2.)
 
-    def getStressRatio(self, index_boom_1, index_boom_2):
-        boom1 = self.boomArray[index_boom_1]
-        boom2 = self.boomArray[index_boom_2]
-
     def getDistanceToNeutralAxis(self, index_boom):
         boom = self.boomArray[index_boom]
         z = boom[0]
