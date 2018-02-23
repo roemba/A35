@@ -117,7 +117,8 @@ class FEM:
         endDist = startDist     # Due to symmetry
 
         n_booms, normPitch, startPitch, endPitch, stringerAmount = FEM.generalSector(n_booms, stringerPitch, startDist,
-                                                                                         endDist, semi + startDist, minBooms, name)
+                                                                                     endDist, semi + startDist,
+                                                                                     minBooms, name)
 
         print 'sector 2'
         print n_booms, normPitch, startPitch, endPitch, stringerAmount
@@ -193,6 +194,113 @@ class FEM:
 
         print ''
         return outputArray
+
+
+
+    # Let's get this party started
+    @staticmethod
+    def boomPositions(n_sector_1, n_sector_2, n_sector_4, C_a, h, n_st, h_st, w_st, t_st):
+        """
+        Takes array of boom pitch values; spits out coordinates compliant with assumptions
+        :return: [z_pos, y_pos, area, [k, l, m]]
+        """
+
+        # From choices:     boom idx 0                              TE          ->  [-C_a, h]
+        #                   boom idx n_sector_1 + 1                 Spar neg. y ->  [-h/2, -h/2]
+        #                   boom idx n_sector_2 + n_sector_1 + 2    Spar pos. y ->  [-h/2, h/2]
+        #
+        # values k, l are almost entirely direct neighbours in outArray return
+
+        # First step: get boom pitch values:
+        discrArray = FEM.discretization(n_sector_1, n_sector_2, n_sector_4, C_a, h, n_st)
+
+        # Geometry values:
+        radius, longS, semi, hypo, angle, length, stringerPitch = FEM.crossSection(h, C_a, n_st)
+        stringerArea = (h_st + w_st) * t_st
+
+        # Array creation
+        # np.vstack([A, [z_pos, y_pos, area, [k, l, m]]])
+        # boom idx 0:
+        outArray = np.array(
+            [-C_a, 0, 0, (1, 2 * n_sector_1 + n_sector_2 + 2, 'N/A')])  # Yes, that's hardcoded. I know.
+        # Deal with it.
+        m = 'N/A'  # Great, most of that value..
+
+        # sector looping:
+        for sector in range(4):
+            # Fixed is the value m, since the only non-'N/A' values are in fixed points 2 and 3
+            booms, normPitch, startPitch, endPitch, stringers = discrArray[sector]
+            if stringers == 0:
+                normBoomNumber = 0  # There is one case where stringers = 0
+            else:
+                normBoomNumber = ((booms - 4) / stringers - 1) / 2  # Follows assumption
+
+            interStringerBooms = 2 * normBoomNumber  # needed mental guidance
+            isStringer = False
+            stringerTicker = 0  # ticks through each cycle, is used to determine when isStringer is flipped for area
+            collPitch = 0.  # reset per sector: collective boom pitch since start
+            startBooms = True  # very obvious
+            endBooms = False
+            if startPitch == 0: startBooms = False
+
+            for boom in range(booms):
+                if startBooms:
+                    pitch = startPitch
+                elif endBooms:
+                    pitch = endPitch
+                else:
+                    pitch = normPitch
+
+                if isStringer:
+                    area = stringerArea
+                else:
+                    area = 0
+
+                collPitch += pitch
+                if sector == 1:  # TE -> lower spar intersect
+                    z = collPitch * np.cos(angle) - C_a
+                    y = - collPitch * np.sin(angle)
+
+                if sector == 2:  # lower spar intersect -> upper spar intersect
+                    z = radius * (np.sin(collPitch / radius) - 1.)
+                    y = - radius * np.cos(collPitch / radius)
+
+                if sector == 3:  # upper spar intersect -> TE
+                    z = - radius - collPitch * np.cos(angle)
+                    y = radius - collPitch * np.sin(angle)
+
+                if sector == 4:  # lower spar intersect -> upper spar intersect
+                    z = - radius
+                    y = - radius + collPitch
+
+                # Let's get neighbouring boom indexes
+                k = np.shape(outArray)[0] - 1  # takes amount of rows. THIS is the issue if there is any
+                l = k + 2
+                np.vstack([outArray, [z, y, area, (k, l, m)]])
+
+                # end of second nested loop:
+                stringerTicker += 1
+                if isStringer:
+                    isStringer = False
+                    stringerTicker = 0
+                if (startBooms or endBooms) == False and stringerTicker == interStringerBooms:
+                    isStringer = True
+
+                if boom + 1 == normBoomNumber + 2:
+                    startBooms = False
+                    isStringer = True  # because the assumption is how it is designed
+                if boom + 2 == booms - (normBoomNumber + 2):
+                    if not sector == 4:  # Let's prevent weird issues shall we?
+                        endBooms = True
+
+            # Again hardcoding; but how else do we get those spar caps in there?
+            if sector == 1:
+                np.vstack([outArray, [-h / 2, -h / 2, 0, (n_sector_1, n_sector_1 + 2, - n_sector_4)]])
+            if sector == 2:
+                np.vstack(
+                    [outArray, [-h / 2, -h / 2, 0, (n_sector_2 + n_sector_1 + 1, n_sector_2 + n_sector_1 + 3, -1)]])
+
+        return outArray
 
 print FEM.discretization(18, 17, 5, 0.547, 0.225, 17)
 #b = FEM.discretization(77, 52, 5, 0.547, 0.225, 17)
