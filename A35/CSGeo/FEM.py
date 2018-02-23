@@ -317,12 +317,20 @@ class FEM:
         return outArray
 
 testArray = FEM.boomPositions(5, 5, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)
-print testArray[12:12+19, 0:2]
-stringerBoom = np.array([-1, 0])
+print 'testarray', testArray[12:12+19, :3]
+stringerBoom = np.array([0.05, 0., 1.])
 
-for i in range(int(np.shape(testArray)[0])):
-    if testArray[i, 2] != 0:
-        stringerBoom = np.vstack([stringerBoom, [testArray[i,0], testArray[i, 1]]])
+partArray = testArray[12:12+19, :3]
+
+for i in range(int(np.shape(partArray)[0])):
+    if partArray[i, 2] != 0:
+        stringerBoom = np.vstack([stringerBoom, [partArray[i,0], partArray[i, 1], partArray[i, 2]]])
+
+
+print testArray[3, 0:3]
+
+print '\n stringerBoom'
+print stringerBoom
 
 z = testArray[12:12+19, 0]
 zStringer = stringerBoom[:, 0]
