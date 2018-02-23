@@ -222,7 +222,7 @@ class FEM:
         # np.vstack([A, [z_pos, y_pos, area, [k, l, m]]])
         # boom idx 0:
         outArray = np.array(
-            [-C_a, 0, 0, (1, 2 * n_sector_1 + n_sector_2 + 2, 'N/A')])  # Yes, that's hardcoded. I know.
+            [(-C_a, 0), 0, (1, 2 * n_sector_1 + n_sector_2 + 2, 'N/A')])  # Yes, that's hardcoded. I know.
         # Deal with it.
         m = 'N/A'  # Great, most of that value..
 
@@ -276,7 +276,7 @@ class FEM:
                 # Let's get neighbouring boom indexes
                 k = np.shape(outArray)[0] - 1  # takes amount of rows. THIS is the issue if there is any
                 l = k + 2
-                np.vstack([outArray, [z, y, area, (k, l, m)]])
+                np.vstack([outArray, [(z, y), area, (k, l, m)]])
 
                 # end of second nested loop:
                 stringerTicker += 1
@@ -295,10 +295,10 @@ class FEM:
 
             # Again hardcoding; but how else do we get those spar caps in there?
             if sector == 1:
-                np.vstack([outArray, [-h / 2, -h / 2, 0, (n_sector_1, n_sector_1 + 2, - n_sector_4)]])
+                np.vstack([outArray, [(-h / 2, -h / 2), 0, (n_sector_1, n_sector_1 + 2, - n_sector_4)]])
             if sector == 2:
                 np.vstack(
-                    [outArray, [-h / 2, -h / 2, 0, (n_sector_2 + n_sector_1 + 1, n_sector_2 + n_sector_1 + 3, -1)]])
+                    [outArray, [(-h / 2, -h / 2), 0, (n_sector_2 + n_sector_1 + 1, n_sector_2 + n_sector_1 + 3, -1)]])
 
         return outArray
 
