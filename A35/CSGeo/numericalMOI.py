@@ -7,10 +7,7 @@ Essentially Steiner Term
 
 """
 
-class numbericalMOI:
-
-
-
+class numericalMOI:
 
     """
 
@@ -32,8 +29,10 @@ class numbericalMOI:
 
         #I_zy, be careful with this one
         I_zy = np.sum(arrayI_zy)
-        
+
         # Due to symmetry
         #I_zy = 0.
 
         return I_zz, I_yy, I_zy
+
+print numericalMOI.getMOI(5, 6, [[0, 1, 2, 3], [0, 1, 2, 3], [5, 6, 7, 8]])
