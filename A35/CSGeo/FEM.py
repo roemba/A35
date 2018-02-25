@@ -195,6 +195,7 @@ class FEM:
         print ''
        # print outputArray
         print ''
+        # Quick ref: output format: [   sectorNumber, normPitch, startPitch, endPitch, stringerAmount  ]
         return outputArray
 
 
@@ -225,7 +226,7 @@ class FEM:
         # boom idx 0:
         m, m_type = None, None
         outArray = np.array(
-            [-C_a, 0, int(0), int(1), 'skin', int(2 * n_sector_1 + n_sector_2 + 2), 'skin', m, m_type])
+            [-C_a, int(0), int(0), int(1), 'skin', int(2 * n_sector_1 + n_sector_2 + 2), 'skin', m, m_type])
 
         # sector looping:
         for sector in range(4):
@@ -244,16 +245,23 @@ class FEM:
             startBooms = True  # very obvious
             endBooms = False
             if startPitch == 0.: startBooms = False
+            isFirstStringer = True
 
             for boom in range(int(booms)):
-                if startBooms:
+                if startBooms or ((not startBooms) and isFirstStringer):
                     pitch = startPitch
+                    if isStringer and isFirstStringer:
+                        isFirstStringer = False
                 elif endBooms:
                     pitch = endPitch
                 else:
                     pitch = normPitch
+                if sector + 1 == 4:     # prevent difficult code requirements
+                    pitch = normPitch
 
-                if isStringer:
+                if sector + 1 == 4:   # getting weird stuff; prevention
+                    area = int(0)
+                elif isStringer:
                     area = stringerArea
                 else:
                     area = int(0)
@@ -276,21 +284,6 @@ class FEM:
                     z = - radius
                     y = - radius + collPitch
 
-                # Let's get neighbouring boom
-                k = int(np.shape(outArray)[0] - 1)  # takes amount of rows. THIS is the issue if there is any
-                l = int(k + 2)
-
-                if sector + 1 != 4:
-                    k_type = 'skin'
-                    l_type = 'skin'
-
-                else:
-                    k_type = 'spar'
-                    l_type = 'spar'
-
-                if sector + 1 == 3 and boom == range(int(booms)): l = 0
-                outArray = np.vstack([outArray, [z, y, area, k, k_type, l, l_type, m, m_type]])
-
                 # end of second nested loop:
                 stringerTicker += 1
                 if isStringer:
@@ -307,24 +300,45 @@ class FEM:
                     if not (sector == 4):  # Let's prevent weird issues shall we?
                         endBooms = True
 
-            # Again hardcoding; but how else do we get those spar caps in there?
+                # Let's get neighbouring boom
+                k = int(np.shape(outArray)[0] - 1)  # takes amount of rows. THIS is the issue if there is any
+                l = int(k + 2)
+
+                if sector + 1 != 4:
+                    k_type = 'skin'
+                    l_type = 'skin'
+
+                else:
+                    k_type = 'spar'
+                    l_type = 'spar'
+
+                if sector + 1 == 3 and boom == range(int(booms)): l = 0
+                outArray = np.vstack([outArray, [z, y, area, k, k_type, l, l_type, m, m_type]])
+
+            # How else do we get those spar caps in there?
             if sector + 1 == 1:
-                outArray = np.vstack([outArray, [-h / 2, -h / 2, int(0), int(n_sector_1), 'skin', int(n_sector_1 + 2), 'skin', int(- n_sector_4), 'spar']])
+                sparcap = np.array([-h / 2, -h / 2, 0, n_sector_1, 'skin', n_sector_1 + 2, 'skin', - n_sector_4, 'spar'])
+                print sparcap
+                outArray = np.vstack([outArray, sparcap])
             if sector + 1 == 2:
                 outArray = np.vstack(
-                    [outArray, [-h / 2, h / 2, int(0), int(n_sector_2 + n_sector_1 + 1), 'skin', int(n_sector_2 + n_sector_1 + 3), 'skin', int(-1), 'spar']])
+                    [outArray, [-h / 2, h / 2, 0, n_sector_2 + n_sector_1 + 1, 'skin', n_sector_2 + n_sector_1 + 3, 'skin', -1, 'spar']])
 
         return outArray
 
+# OUTPUT -- [   z   ,   y   ,   area    ,   ... neighbours ...  ]
+
 testArray = FEM.boomPositions(5, 5, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)
-print 'testarray', testArray[12:12+19, :3]
-stringerBoom = np.array([0.05, 0., 1.])
+print 'testarray', testArray[:12, :]
+print testArray[12+19]
+print '\n spar', testArray[-5:]
+stringerBoom = np.array([0.05, 0.])
 
-partArray = testArray[12:12+19, :3]
+partArray = testArray[11:12+20, :3]#[12:12+19, :3]
 
-for i in range(int(np.shape(partArray)[0])):
-    if partArray[i, 2] != 0:
-        stringerBoom = np.vstack([stringerBoom, [partArray[i,0], partArray[i, 1], partArray[i, 2]]])
+for boom in testArray:
+    if boom[2] == 0:
+        stringerBoom = np.vstack([stringerBoom, [boom[0], boom[1]]])
 
 
 print testArray[3, 0:3]
@@ -337,12 +351,18 @@ zStringer = stringerBoom[:, 0]
 y = testArray[12:12+19, 1]
 yStringer = stringerBoom[:, 1]
 
-#z = testArray[:, 0]
-#y = testArray[:, 1]
+z = testArray[:, 0]
+y = testArray[:, 1]
 
 plt.hlines(0, -0.6, 0.05)
-plt.vlines(-0.225/2, - 0.225/2 - 0.05, 0.225/2 + 0.05)
+plt.vlines(-0.225/2, -0.225/2 - 0.05, 0.225/2 + 0.05)
+plt.vlines(0, -0.225/2 - 0.05, 0.225/2 + 0.05)
 plt.scatter(z, y)
-plt.scatter(zStringer, yStringer, marker='+', c='red')
+plt.scatter(stringerBoom[:, 0], stringerBoom[:, 1], marker='+', c='red')
 plt.show()
+
+# Current problems:
+# Sectors 1, 3 do not display correctly as they should in scatter plot
+# Sector 2 shows spacing incorrect -> potential fix: take (n_booms / 2) - 1 and div over spacing, set fix at LE?
+# One of two spar caps show to have area?   --> WHY are all entries for both spar caps in output 'text'?
 
