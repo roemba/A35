@@ -376,7 +376,7 @@ class FEM:
 
 # OUTPUT -- [   z   ,   y   ,   area    ,   ... neighbours ...  ]
 
-testArray = FEM.boomPositions(5, 20, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)
+testArray = FEM.boomPositions(250, 2500, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)
 #print 'testarray', testArray
 #print testArray[12+19]
 #print '\n spar', testArray[-5:]
