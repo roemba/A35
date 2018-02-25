@@ -57,19 +57,20 @@ class FEM:
             if ((n_booms - 4) / stringerAmount) % 2 == 0:
                 n_booms -= stringerAmount
                 key = True
-            if key == True:
+
+            if key:
                 print 'Simple program is not advanced enough for complicated mesh-making; ' \
                       'reducing Sector', sectorNumber, 'boom amount to:', n_booms
 
             # From first to last boom, spacing is equal at: stringerPitch * stringerAmount / (n_booms - 4)
-            # this changes for the first set to     startDist / ((boomsPerStringer + 3) / 2)
-            # and for the last set it changes to    endDist / ((boomsPerStringer + 3) / 2)
+            # this changes for the first set to     startDist / (boomsPerStringer + 5)
+            # and for the last set it changes to    endDist / (boomsPerStringer + 5)
 
             boomsPerStringer = (n_booms - 4) / stringerAmount
 
             normPitch = stringerPitch * stringerAmount / (n_booms - 4)
-            startPitch = startDist / (boomsPerStringer + 5)
-            endPitch = endDist / (boomsPerStringer + 5)
+            startPitch = 2 * startDist / (boomsPerStringer + 5)
+            endPitch = 2 * endDist / (boomsPerStringer + 5)
 
         else:       # Because sector 4 (spar) doesn't have any stringers, and equal spacing is the current go-to
             normPitch = length / n_booms
@@ -97,7 +98,7 @@ class FEM:
                                                                                      endDist, hypo, minBooms, name)
 
    #     print 'sector 1, 3'
-    #    print n_booms, normPitch, startPitch, endPitch, stringerAmount
+        print n_booms, normPitch, startPitch, endPitch, stringerAmount
         return n_booms, normPitch, startPitch, endPitch, stringerAmount
 
 
@@ -113,6 +114,7 @@ class FEM:
         # now check for spacing things
         # As with sector 1, 3: require skin-booms symmetrically about stringers
         # first: get stringers in section...
+
         startDist = stringerPitch * (stringersIn1 + 1) - hypo
         endDist = startDist     # Due to symmetry
 
@@ -120,9 +122,12 @@ class FEM:
                                                                                      endDist, semi + startDist,
                                                                                      minBooms, name)
 
-   #     print 'sector 2'
-    #    print n_booms, normPitch, startPitch, endPitch, stringerAmount
-        return n_booms, normPitch, startPitch, endPitch, stringerAmount
+        # Due to discretization accuracy issues, the return statements for pitch are changed to radians
+        radius = semi / np.pi
+        normAngle = normPitch / radius
+        normPitch = normAngle
+
+        return n_booms, normPitch, startDist, endDist, stringerAmount
 
 
 
@@ -174,7 +179,7 @@ class FEM:
         n_sector_3, normPitch_3, endPitch_3, startPitch_3, stringersIn3 =\
             n_sector_1, normPitch_1, startPitch_1, endPitch_1, stringersIn1
 
-        # Sector 2:
+        # Sector 2:     # sector 2 'start' and 'end' pitch modified to dist instead
         n_sector_2, normPitch_2, startPitch_2, endPitch_2, stringersIn2 = \
             FEM.sector_2(n_sector_2, stringerPitch, hypo, semi, stringersIn1)
 
@@ -185,16 +190,12 @@ class FEM:
         # Sector 1, 3:
         outputArray[0] = n_sector_1, normPitch_1, startPitch_1, endPitch_1, stringersIn1
         outputArray[2] = n_sector_3, normPitch_3, startPitch_3, endPitch_3, stringersIn3
-
-        # Sector 2:
         outputArray[1] = n_sector_2, normPitch_2, startPitch_2, endPitch_2, stringersIn2
-
-        # Sector 4:
         outputArray[3] = n_sector_4, normPitch_4, startPitch_4, endPitch_4, stringersIn4
 
-        print ''
-       # print outputArray
-        print ''
+#        print ''
+ #       print outputArray
+  #      print ''
         # Quick ref: output format: [   sectorNumber, normPitch, startPitch, endPitch, stringerAmount  ]
         return outputArray
 
@@ -212,7 +213,7 @@ class FEM:
         #                   boom idx n_sector_1 + 1                 Spar neg. y ->  [-h/2, -h/2]
         #                   boom idx n_sector_2 + n_sector_1 + 2    Spar pos. y ->  [-h/2, h/2]
         #
-        # values k, l are almost entirely direct neighbours in outArray return
+        # values k, l are almost entirely direct index neighbours in outArray return
 
         # First step: get boom pitch values:
         discrArray = FEM.discretization(n_sector_1, n_sector_2, n_sector_4, C_a, h, n_st)
@@ -222,7 +223,7 @@ class FEM:
         stringerArea = (h_st + w_st) * t_st
 
         # Array creation
-        # outArray = np.vstack([A, [z_pos, y_pos, area, [k, l, m]]])
+        # outArray = np.vstack([A, [z_pos, y_pos, area, k, k_type, l, l_type, m, m_type]])
         # boom idx 0:
         m, m_type = None, None
         outArray = np.array(
@@ -236,16 +237,28 @@ class FEM:
                 normBoomNumber = 0  # There is one case where stringers = 0
             else:
                 normBoomNumber = ((booms - 4) / stringers - 1) / 2  # Follows assumption
-                    # normBoomNumber
 
             interStringerBooms = 2 * normBoomNumber  # just like the name
             isStringer = False
             stringerTicker = 0  # ticks through each cycle, is used to determine when isStringer is flipped for area
-            collPitch = 0.  # reset per sector: collective boom pitch since start
+            collPitch = 0.      # reset per sector: collective boom pitch since
             startBooms = True  # very obvious
             endBooms = False
             if startPitch == 0.: startBooms = False
             isFirstStringer = True
+
+            # The following variables are for rework of sector 2 discretization/spacing without influencing all else
+            # This rework makes the code look like crazy
+            sec2Pitch = 0.
+            if booms % 2 != 0:
+                tempBooms = (booms - 1) / 2  # amount of booms in one quadrant minus boom in LE
+                notStartBooms = ((stringers - 1) / 2) * (interStringerBooms + 1)
+            else:
+                tempBooms = booms / 2
+                notStartBooms = (stringers / 2) * (interStringerBooms + 1) - normBoomNumber
+            normAngleSpacing = ((semi / 2.) - startPitch) / radius / notStartBooms
+            startEndSpacing = startPitch / radius / (normBoomNumber + 2)
+            semi2Ticker = 0
 
             for boom in range(int(booms)):
                 if startBooms or ((not startBooms) and isFirstStringer):
@@ -266,15 +279,36 @@ class FEM:
                 else:
                     area = int(0)
 
+                # Step per iter
                 collPitch += pitch
 
                 if sector + 1 == 1:  # TE -> lower spar intersect
                     z = collPitch * np.cos(angle) - C_a
                     y = - collPitch * np.sin(angle)
+                    print pitch, collPitch, z, y
 
-                if sector + 1 == 2:  # lower spar intersect -> upper spar intersect
-                    z = radius * (np.sin(collPitch / radius) - 1.)
-                    y = - radius * np.cos(collPitch / radius)
+                # Major rework happened here; messy is a result
+                if sector + 1 == 2:
+                    if boom <= tempBooms:       # to ensure that this implies the first half only
+                        if tempBooms - notStartBooms == boom + 1: pitchUsed = startEndSpacing
+                        else: pitchUsed = normAngleSpacing            # spacing between spar, and first stringer
+                        sec2Pitch += pitchUsed
+                        if booms % 2 != 0 and boom == tempBooms:    # hardcoding is navigates around issue
+                            z = 0.
+                            y = 0.
+                        else:
+                            z = radius * (np.sin(sec2Pitch) - 1.)
+                            y = radius * np.cos(sec2Pitch)
+
+                    else:                       # Second half literally copies first half; works due to symmetry y
+                        semi2Ticker += 1  # to work towards index of referenced values
+                        if booms % 2 != 0:
+                            symmCopy = outArray[- 2 * semi2Ticker]
+                        else:
+                            symmCopy = outArray[- 2 * semi2Ticker + 1]
+
+                        z = symmCopy[0]
+                        y = -1 * symmCopy[1]
 
                 if sector + 1 == 3:  # upper spar intersect -> TE
                     z = - radius - collPitch * np.cos(angle)
@@ -290,9 +324,6 @@ class FEM:
                     isStringer = False
                     stringerTicker = 0
 
-                if (not (startBooms or endBooms)) and stringerTicker == interStringerBooms:
-                    isStringer = True
-
                 if boom + 1 == normBoomNumber + 2:
                     startBooms = False
                     isStringer = True  # because the assumption is how it is designed
@@ -300,7 +331,10 @@ class FEM:
                     if not (sector == 4):  # Let's prevent weird issues shall we?
                         endBooms = True
 
-                # Let's get neighbouring boom
+                if (not (startBooms or endBooms)) and stringerTicker == interStringerBooms:
+                    isStringer = True
+
+                # Let's get the neighbouring boom index
                 k = int(np.shape(outArray)[0] - 1)  # takes amount of rows. THIS is the issue if there is any
                 l = int(k + 2)
 
@@ -315,15 +349,19 @@ class FEM:
                 if sector + 1 == 3 and boom == range(int(booms)): l = 0
                 outArray = np.vstack([outArray, [z, y, area, k, k_type, l, l_type, m, m_type]])
 
+    ###################################################################################################################
+    #################################################### SEPARATOR ####################################################
+    ###################################################################################################################
+
             # How else do we get those spar caps in there?
             if sector + 1 == 1:
-                sparcap = np.array([-h / 2, -h / 2, 0, n_sector_1, 'skin', n_sector_1 + 2, 'skin', - n_sector_4, 'spar'])
-                #print sparcap
-                outArray = np.vstack([outArray, sparcap])
+                outArray = np.vstack(
+                    [outArray, [-h / 2, -h / 2, 0, n_sector_1, 'skin', n_sector_1 + 2, 'skin', - n_sector_4, 'spar']])
             if sector + 1 == 2:
                 outArray = np.vstack(
                     [outArray, [-h / 2, h / 2, 0, n_sector_2 + n_sector_1 + 1, 'skin', n_sector_2 + n_sector_1 + 3, 'skin', -1, 'spar']])
 
+        # Not sure why this is necessary, but it is.
         for boomIndex in range(len(outArray)):
             for itemIndex in [0, 1, 2, 3, 5, 7]:
                 item = outArray[boomIndex, itemIndex]
@@ -332,21 +370,21 @@ class FEM:
                         outArray[boomIndex, itemIndex] = int(item)
                     else:
                         outArray[boomIndex, itemIndex] = float(item)
+
         return outArray
 
 
 # OUTPUT -- [   z   ,   y   ,   area    ,   ... neighbours ...  ]
 
-testArray = FEM.boomPositions(5, 5, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)
-#print 'testarray', testArray[:12, :]
+testArray = FEM.boomPositions(5, 20, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)
+#print 'testarray', testArray
 #print testArray[12+19]
 #print '\n spar', testArray[-5:]
 stringerBoom = np.array([0.05, 0.])
 
 partArray = testArray[11:12+20, :3]#[12:12+19, :3]
-
 for boom in testArray:
-    if boom[2] == 0:
+    if boom[2] != 0:
         stringerBoom = np.vstack([stringerBoom, [boom[0], boom[1]]])
 
 
@@ -367,7 +405,7 @@ plt.hlines(0, -0.6, 0.05)
 plt.vlines(-0.225/2, -0.225/2 - 0.05, 0.225/2 + 0.05)
 plt.vlines(0, -0.225/2 - 0.05, 0.225/2 + 0.05)
 plt.scatter(z, y)
-plt.scatter(stringerBoom[:, 0], stringerBoom[:, 1], marker='+', c='red')
+plt.scatter(stringerBoom[:, 0], stringerBoom[:, 1], marker='*', c='red')
 plt.show()
 
 # Current problems:
