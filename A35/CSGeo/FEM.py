@@ -318,20 +318,29 @@ class FEM:
             # How else do we get those spar caps in there?
             if sector + 1 == 1:
                 sparcap = np.array([-h / 2, -h / 2, 0, n_sector_1, 'skin', n_sector_1 + 2, 'skin', - n_sector_4, 'spar'])
-                print sparcap
+                #print sparcap
                 outArray = np.vstack([outArray, sparcap])
             if sector + 1 == 2:
                 outArray = np.vstack(
                     [outArray, [-h / 2, h / 2, 0, n_sector_2 + n_sector_1 + 1, 'skin', n_sector_2 + n_sector_1 + 3, 'skin', -1, 'spar']])
 
+        for boomIndex in range(len(outArray)):
+            for itemIndex in [0, 1, 2, 3, 5, 7]:
+                item = outArray[boomIndex, itemIndex]
+                if item is not None:
+                    if float(item) == 0.0:
+                        outArray[boomIndex, itemIndex] = int(item)
+                    else:
+                        outArray[boomIndex, itemIndex] = float(item)
         return outArray
+
 
 # OUTPUT -- [   z   ,   y   ,   area    ,   ... neighbours ...  ]
 
 testArray = FEM.boomPositions(5, 5, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)
-print 'testarray', testArray[:12, :]
-print testArray[12+19]
-print '\n spar', testArray[-5:]
+#print 'testarray', testArray[:12, :]
+#print testArray[12+19]
+#print '\n spar', testArray[-5:]
 stringerBoom = np.array([0.05, 0.])
 
 partArray = testArray[11:12+20, :3]#[12:12+19, :3]
@@ -341,10 +350,10 @@ for boom in testArray:
         stringerBoom = np.vstack([stringerBoom, [boom[0], boom[1]]])
 
 
-print testArray[3, 0:3]
+#print testArray[3, 0:3]
 
-print '\n stringerBoom'
-print stringerBoom
+#print '\n stringerBoom'
+#print stringerBoom
 
 z = testArray[12:12+19, 0]
 zStringer = stringerBoom[:, 0]
@@ -364,5 +373,3 @@ plt.show()
 # Current problems:
 # Sectors 1, 3 do not display correctly as they should in scatter plot
 # Sector 2 shows spacing incorrect -> potential fix: take (n_booms / 2) - 1 and div over spacing, set fix at LE?
-# One of two spar caps show to have area?   --> WHY are all entries for both spar caps in output 'text'?
-
