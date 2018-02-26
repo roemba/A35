@@ -220,7 +220,7 @@ class FEM:
         # boom idx 0:
         m, m_type = None, None
         outArray = np.array(
-            [-C_a, int(0), int(0), int(1), 'skin', int(2 * discrArray[0, 0] + discrArray[1, 0] + 2), 'skin', m, m_type])
+            [-C_a, int(0), int(0), int(1), 'skin', int(2 * discrArray[0, 0] + discrArray[1, 0] + 2), 'skin', m, m_type, False])
 
         # sector looping:
         for sector in range(4):
@@ -254,6 +254,7 @@ class FEM:
             semi2Ticker = 0
 
             for boom in range(int(booms)):
+                stringerBool = isStringer   # for use in
                 if startBooms or ((not startBooms) and isFirstStringer):
                     pitch = startPitch
                     if isStringer and isFirstStringer:
@@ -349,7 +350,7 @@ class FEM:
                     l_type = 'spar'
 
                 if sector + 1 == 3 and boom + 1 == int(booms): l = 0
-                outArray = np.vstack([outArray, [z, y, area, int(k), k_type, int(l), l_type, m, m_type]])
+                outArray = np.vstack([outArray, [z, y, area, int(k), k_type, int(l), l_type, m, m_type, stringerBool]])
 
     ###################################################################################################################
     #################################################### SEPARATOR ####################################################
@@ -365,10 +366,10 @@ class FEM:
                 topSpar = booms + 2 * discrArray[0, 0] + discrArray[3, 0] + 2
             if sector + 1 == 1:
                 outArray = np.vstack(
-                    [outArray, [-h / 2, -h / 2, 0, booms, 'skin', booms + 2, 'skin', botSpar, 'spar']])
+                    [outArray, [-h / 2, -h / 2, 0, booms, 'skin', booms + 2, 'skin', botSpar, 'spar', False]])
             if sector + 1 == 2:
                 outArray = np.vstack(
-                    [outArray, [-h / 2, h / 2, 0, booms + discrArray[0, 0] + 1, 'skin', booms + discrArray[0, 0] + 3, 'skin', topSpar, 'spar']])
+                    [outArray, [-h / 2, h / 2, 0, booms + discrArray[0, 0] + 1, 'skin', booms + discrArray[0, 0] + 3, 'skin', topSpar, 'spar', False]])
 
         # Not sure why this is necessary, but it is.
         for boomIndex in range(len(outArray)):
