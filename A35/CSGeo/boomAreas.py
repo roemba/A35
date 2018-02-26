@@ -26,24 +26,30 @@ class boomAreas:
         self.I_zz = I_zz
 
     def calculateBoomAreas(self, spar_thickness, skin_thickness):
-        for index, boom in self.boomArray:
+        for index in xrange(len(self.boomArray)):
+            boom = self.boomArray[index]
             boomArea = 0.
-            ownDistanceToNeutralAxis = self.getDistanceToNeutralAxis(index)
 
-            for i in range(3, 6):
-                if boom[i][0] is not None:
-                    distanceToConnectedBoom = self.getSkinDistance(index, boom[i][0])
-                    connectedBoomDistanceToNeutralAxis = self.getDistanceToNeutralAxis(boom[i][0])
+            if self.m_z != 0.:
+                ownDistanceToNeutralAxis = self.getDistanceToNeutralAxis(index)
 
-                    print connectedBoomDistanceToNeutralAxis/ownDistanceToNeutralAxis
-                    if boom[i][1] == "spar":
-                        boomArea += self.calculateBoomArea(spar_thickness, distanceToConnectedBoom,
-                                                           connectedBoomDistanceToNeutralAxis/ownDistanceToNeutralAxis)
+            for i in [3, 5, 7]:
+                if boom[i] is not None:
+                    distanceToConnectedBoom = self.getSkinDistance(index, boom[i])
+
+                    ratio = 0.
+                    if self.m_z != 0.:
+                        connectedBoomDistanceToNeutralAxis = self.getDistanceToNeutralAxis(boom[i])
+                        if abs(ownDistanceToNeutralAxis) >= 0.000001 and abs(connectedBoomDistanceToNeutralAxis) >= 0.000001:
+                            ratio = connectedBoomDistanceToNeutralAxis/ownDistanceToNeutralAxis
+                        else:
+                            ratio = 0.
+
+                    if boom[i+1] == "spar":
+                        boomArea += self.calculateBoomArea(spar_thickness, distanceToConnectedBoom, ratio)
                     else:
-                        boomArea += self.calculateBoomArea(skin_thickness, distanceToConnectedBoom,
-                                                           connectedBoomDistanceToNeutralAxis/ownDistanceToNeutralAxis)
+                        boomArea += self.calculateBoomArea(skin_thickness, distanceToConnectedBoom, ratio)
 
-            print index, boomArea
             self.boomArray[index][2] = boomArea
 
         return self.boomArray

@@ -4,12 +4,22 @@ from math import *
 class closedSectionShearFlow:
 
     """
-    Inputs: I_zz, I_yy, I_zy, [z_boom, y_boom, boom_area, k, l, m]
+    Inputs: I_zz, I_yy, I_zy, V_z, V_y, L_c, L_t, h, G, t_sk, t_sp,  [[z_boom, y_boom, boom_area, k, pnltype, l, pnltype, m, pnltype]]
 
     Outputs: q_b
     """
     @staticmethod
-    def calculation(I_zz, I_yy, I_zy, V_z, V_y, boomArray):
+    def calculation(I_zz, I_yy, I_zy, V_z, V_y, L_c, L_t, h, G, t_sk, t_sp, boomArray):
 
-        return q_s0
+        #CHECK IF USING t_sp
+        rateOfTwist = (1./(np.pi*((h/2.)**2)))*(((q_s01*L_c)/(t_sk*G))+(((q_s01 - q_s02)*L_t)/(t_sp*G)))
+        rateOfTwist =
 
+        return 0.
+    """
+    
+    """
+    @staticmethod
+    def geometry():
+
+        return 0
