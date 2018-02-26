@@ -31,7 +31,7 @@ class CSGeometry:
         length = semiCircle + 2.*hypo                           # Total length cross-section
 
         centerSpacing = length / n_st                           # stringer pitch
-        print 'stringer spacing: ', centerSpacing
+        #print 'stringer spacing: ', centerSpacing
         finalArray = np.zeros((int(n_st), 4))
         for i in range(int(n_st)):
             distFromTE = centerSpacing * (float(i) + 0.5)
