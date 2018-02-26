@@ -8,7 +8,7 @@ class boomAreas:
     I_zz = 0.
 
     """
-    boomArray = [z, y, A, [k, connection_type], [l, type], [(m), type]]
+    boomArray = [z, y, A, k, connection_type, l, connection_type, (m), connection_type, isStringer]
     where z = z-coordinate,
     y = y-coordinate,
     A = boom area,
@@ -25,10 +25,13 @@ class boomAreas:
         self.I_yy = I_yy
         self.I_zz = I_zz
 
-    def calculateBoomAreas(self, spar_thickness, skin_thickness):
+    def calculateBoomAreas(self, spar_thickness, skin_thickness, stringer_area):
         for index in xrange(len(self.boomArray)):
             boom = self.boomArray[index]
-            boomArea = 0.
+            if boom[9]:
+                boomArea = stringer_area
+            else:
+                boomArea = 0.
 
             if self.m_z != 0.:
                 ownDistanceToNeutralAxis = self.getDistanceToNeutralAxis(index)
@@ -64,7 +67,7 @@ class boomAreas:
         boom = self.boomArray[index_boom]
         z = boom[0]
         y = boom[1]
-        return ((self.I_yy/self.I_zz)*y - (self.m_y/self.m_z)*z)/math.sqrt((self.m_y/self.m_z)**2. + (self.I_yy/self.I_zz)**2.)
+        return abs((self.I_yy/self.I_zz)*y - (self.m_y/self.m_z)*z)/math.sqrt((self.m_y/self.m_z)**2. + (self.I_yy/self.I_zz)**2.)
 
     def calculateBoomArea(self, thickness, distance, distance_ratio):
         return ((thickness*distance)/6.)*(2. + distance_ratio)
