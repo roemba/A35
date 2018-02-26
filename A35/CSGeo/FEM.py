@@ -96,9 +96,6 @@ class FEM:
 
         n_booms, normPitch, startPitch, endPitch, stringerAmount = FEM.generalSector(n_booms, stringerPitch, startDist,
                                                                                      endDist, hypo, minBooms, name)
-
-   #     print 'sector 1, 3'
-        print n_booms, normPitch, startPitch, endPitch, stringerAmount
         return n_booms, normPitch, startPitch, endPitch, stringerAmount
 
 
@@ -145,9 +142,6 @@ class FEM:
 
         n_booms, normPitch, startPitch, endPitch, stringerAmount = FEM.generalSector(n_booms, stringerPitch, startDist,
                                                                                      endDist, height, minBooms, name)
-
-     #   print 'sector 4'
-      #  print n_booms, normPitch, startPitch, endPitch, stringerAmount
         return n_booms, normPitch, startPitch, endPitch, stringerAmount
 
 
@@ -193,13 +187,12 @@ class FEM:
         outputArray[1] = n_sector_2, normPitch_2, startPitch_2, endPitch_2, stringersIn2
         outputArray[3] = n_sector_4, normPitch_4, startPitch_4, endPitch_4, stringersIn4
 
-#        print ''
- #       print outputArray
-  #      print ''
-        # Quick ref: output format: [   sectorNumber, normPitch, startPitch, endPitch, stringerAmount  ]
+        # Quick ref: output format: [   (new)boomAmount, normPitch, startPitch, endPitch, stringerAmount  ]
         return outputArray
 
-
+    ###################################################################################################################
+    #################################################### SEPARATOR ####################################################
+    ###################################################################################################################
 
     # Let's get this party started
     @staticmethod
@@ -227,7 +220,7 @@ class FEM:
         # boom idx 0:
         m, m_type = None, None
         outArray = np.array(
-            [-C_a, int(0), int(0), int(1), 'skin', int(2 * n_sector_1 + n_sector_2 + 2), 'skin', m, m_type])
+            [-C_a, int(0), int(0), int(1), 'skin', int(2 * discrArray[0, 0] + discrArray[1, 0] + 2), 'skin', m, m_type])
 
         # sector looping:
         for sector in range(4):
@@ -285,12 +278,11 @@ class FEM:
                 if sector + 1 == 1:  # TE -> lower spar intersect
                     z = collPitch * np.cos(angle) - C_a
                     y = - collPitch * np.sin(angle)
-                    print pitch, collPitch, z, y
 
                 # Major rework happened here; messy is a result
                 if sector + 1 == 2:
                     if boom <= tempBooms:       # to ensure that this implies the first half only
-                        if tempBooms - notStartBooms == boom + 1: pitchUsed = startEndSpacing
+                        if tempBooms - notStartBooms >= boom + 1: pitchUsed = startEndSpacing
                         else: pitchUsed = normAngleSpacing            # spacing between spar, and first stringer
                         sec2Pitch += pitchUsed
                         if booms % 2 != 0 and boom == tempBooms:    # hardcoding is navigates around issue
@@ -335,8 +327,18 @@ class FEM:
                     isStringer = True
 
                 # Let's get the neighbouring boom index
-                k = int(np.shape(outArray)[0] - 1)  # takes amount of rows. THIS is the issue if there is any
+                if sector + 1 == 1 and boom == 0:
+                    k = 0
+                else:
+                    k = int(np.shape(outArray)[0] - 1)  # takes amount of rows. THIS is the issue if there is any
                 l = int(k + 2)
+
+                # k and l modifications for select few points
+                if sector + 1 == 4:
+                    if boom == 0:
+                        k = int(discrArray[0, 0] + 1)
+                    if boom + 1 == booms:
+                        l = int(discrArray[1, 0] + discrArray[0, 0] + 2)
 
                 if sector + 1 != 4:
                     k_type = 'skin'
@@ -346,58 +348,53 @@ class FEM:
                     k_type = 'spar'
                     l_type = 'spar'
 
-                if sector + 1 == 3 and boom == range(int(booms)): l = 0
-                outArray = np.vstack([outArray, [z, y, area, k, k_type, l, l_type, m, m_type]])
+                if sector + 1 == 3 and boom + 1 == int(booms): l = 0
+                outArray = np.vstack([outArray, [z, y, area, int(k), k_type, int(l), l_type, m, m_type]])
 
     ###################################################################################################################
     #################################################### SEPARATOR ####################################################
     ###################################################################################################################
 
             # How else do we get those spar caps in there?
+            # First terms are for neighbours if spar booms exist or not:
+            if discrArray[3, 0] == 0:
+                botSpar = discrArray[0, 0] + discrArray[1, 0] + 2
+                topSpar = discrArray[0, 0] + 1
+            else:
+                botSpar = 2 * booms + discrArray[1, 0] + 3
+                topSpar = booms + 2 * discrArray[0, 0] + discrArray[3, 0] + 2
             if sector + 1 == 1:
                 outArray = np.vstack(
-                    [outArray, [-h / 2, -h / 2, 0, n_sector_1, 'skin', n_sector_1 + 2, 'skin', - n_sector_4, 'spar']])
+                    [outArray, [-h / 2, -h / 2, 0, booms, 'skin', booms + 2, 'skin', botSpar, 'spar']])
             if sector + 1 == 2:
                 outArray = np.vstack(
-                    [outArray, [-h / 2, h / 2, 0, n_sector_2 + n_sector_1 + 1, 'skin', n_sector_2 + n_sector_1 + 3, 'skin', -1, 'spar']])
+                    [outArray, [-h / 2, h / 2, 0, booms + discrArray[0, 0] + 1, 'skin', booms + discrArray[0, 0] + 3, 'skin', topSpar, 'spar']])
 
         # Not sure why this is necessary, but it is.
         for boomIndex in range(len(outArray)):
             for itemIndex in [0, 1, 2, 3, 5, 7]:
                 item = outArray[boomIndex, itemIndex]
                 if item is not None:
-                    if float(item) == 0.0:
-                        outArray[boomIndex, itemIndex] = int(item)
-                    else:
+                    if itemIndex == 2 and float(item) == 0.0:
+                        outArray[boomIndex, itemIndex] = int(float(item))
+                    elif itemIndex <= 2:
                         outArray[boomIndex, itemIndex] = float(item)
+                    else:
+                        outArray[boomIndex, itemIndex] = int(float(item))
 
         return outArray
 
-
 # OUTPUT -- [   z   ,   y   ,   area    ,   ... neighbours ...  ]
 
-testArray = FEM.boomPositions(250, 2500, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)
-#print 'testarray', testArray
-#print testArray[12+19]
-#print '\n spar', testArray[-5:]
-stringerBoom = np.array([0.05, 0.])
+testArray = FEM.boomPositions(5, 5, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)
 
-partArray = testArray[11:12+20, :3]#[12:12+19, :3]
+# For visual representation of booms
+stringerBoom = np.array([0.05, 0.])
 for boom in testArray:
     if boom[2] != 0:
         stringerBoom = np.vstack([stringerBoom, [boom[0], boom[1]]])
 
-
-#print testArray[3, 0:3]
-
-#print '\n stringerBoom'
-#print stringerBoom
-
-z = testArray[12:12+19, 0]
-zStringer = stringerBoom[:, 0]
-y = testArray[12:12+19, 1]
-yStringer = stringerBoom[:, 1]
-
+# Visual representation of all booms
 z = testArray[:, 0]
 y = testArray[:, 1]
 
@@ -409,5 +406,6 @@ plt.scatter(stringerBoom[:, 0], stringerBoom[:, 1], marker='*', c='red')
 plt.show()
 
 # Current problems:
-# Sectors 1, 3 do not display correctly as they should in scatter plot
-# Sector 2 shows spacing incorrect -> potential fix: take (n_booms / 2) - 1 and div over spacing, set fix at LE?
+# Discontinuity sector 2 near LE                                        -- solved
+# Check corner cases neighbours - expect one anomaly (end sector 3)     -- solved
+# neigbour list incorrect? (check TE // idx 0)                          -- solved
