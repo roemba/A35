@@ -10,8 +10,6 @@ Essentially Steiner Term
 class numericalMOI:
 
     """
-
-
     Inputs: z_centroid, y_centroid, [z_boom, y_boom, boom_area, [k, pnltype], [l, pnltype], [m, pnltype]]
     Outputs: I_zz, I_yy, I_zy
     """
@@ -37,4 +35,3 @@ class numericalMOI:
         #I_zy = 0.
 
         return I_zz, I_yy, I_zy
-
