@@ -4,7 +4,7 @@ from math import *
 class closedSectionShearFlow:
 
     """
-    Inputs: I_zz, I_yy, I_zy, V_z, V_y, L_c, L_t, h, G, t_sk, t_sp,  [[z_boom, y_boom, boom_area, k, pnltype, l, pnltype, m, pnltype]]
+    Inputs: I_zz, I_yy, I_zy, V_z, V_y, L_c, L_t, h, G, t_sk, t_sp,  k, k_type, l, l_type, m, m_type
 
     Outputs: q_b
     """
