@@ -120,9 +120,9 @@ class FEM:
                                                                                      minBooms, name)
 
         # Due to discretization accuracy issues, the return statements for pitch are changed to radians
-        radius = semi / np.pi
-        normAngle = normPitch / radius
-        normPitch = normAngle
+        #radius = semi / np.pi
+        #normAngle = normPitch / radius
+        #normPitch = normAngle
 
         return n_booms, normPitch, startDist, endDist, stringerAmount
 
@@ -245,12 +245,12 @@ class FEM:
             sec2Pitch = 0.
             if booms % 2 != 0:
                 tempBooms = (booms - 1) / 2  # amount of booms in one quadrant minus boom in LE
-                notStartBooms = ((stringers - 1) / 2) * (interStringerBooms + 1)
+                notStartBooms = ((stringers - 1) / 2) * (interStringerBooms + 1) - 1
             else:
                 tempBooms = booms / 2
-                notStartBooms = (stringers / 2) * (interStringerBooms + 1) - normBoomNumber
-            normAngleSpacing = ((semi / 2.) - startPitch) / radius / notStartBooms
-            startEndSpacing = startPitch / radius / (normBoomNumber + 2)
+                notStartBooms = (stringers / 2) * (interStringerBooms + 1) - normBoomNumber - 1
+            normAngleSpacing = ((semi / 2.) - startPitch) / (radius * (notStartBooms + 1))
+            startEndSpacing = startPitch / (radius * (normBoomNumber + 3))
             semi2Ticker = 0
 
             for boom in range(int(booms)):
@@ -283,9 +283,12 @@ class FEM:
                 # Major rework happened here; messy is a result
                 if sector + 1 == 2:
                     if boom <= tempBooms:       # to ensure that this implies the first half only
-                        if tempBooms - notStartBooms >= boom + 1: pitchUsed = startEndSpacing
-                        else: pitchUsed = normAngleSpacing            # spacing between spar, and first stringer
+                        if tempBooms - notStartBooms >= boom + 1:
+                            pitchUsed = startEndSpacing
+                        else:
+                            pitchUsed = normAngleSpacing            # spacing between spar, and first stringer
                         sec2Pitch += pitchUsed
+
                         if booms % 2 != 0 and boom == tempBooms:    # hardcoding is navigates around issue
                             z = 0.
                             y = 0.
