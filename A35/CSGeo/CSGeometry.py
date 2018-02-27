@@ -11,7 +11,6 @@ n_st
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 class CSGeometry:
     """

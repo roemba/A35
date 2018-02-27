@@ -415,8 +415,3 @@ ax.scatter(stringerBoom[:, 0], stringerBoom[:, 1], marker='*', c='red', label="S
 ax.legend()
 fig.savefig("boom_locations.png")
 fig.show()
-
-# Current problems:
-# Discontinuity sector 2 near LE                                        -- solved
-# Check corner cases neighbours - expect one anomaly (end sector 3)     -- solved
-# neigbour list incorrect? (check TE // idx 0)                          -- solved
