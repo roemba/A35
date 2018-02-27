@@ -47,8 +47,8 @@ for x in xtab:
 ytab = []
 i_zz_cs_old = 0.00000000000000001
 i = 0
-while abs((i_zz_cs/i_zz_cs_old)*100. - 100.) > 1.:
-#while i <= 100:
+#while abs((i_zz_cs/i_zz_cs_old)*100. - 100.) > 1.:
+while i <= 100:
     i_zz_cs_old = i_zz_cs
     i += 1
     print "Loop: " + str(i)
@@ -93,7 +93,7 @@ while abs((i_zz_cs/i_zz_cs_old)*100. - 100.) > 1.:
                                                pm.maxupwarddeflection)
         internalForcesArray = [m_yy_cs, m_zz_cs, v_y_cs, v_z_cs]
 
-        boomAreaClass = ba(boomArray, internalForcesArray[0], internalForcesArray[1], i_zz_cs, i_yy_cs)
+        boomAreaClass = ba(boomArray, internalForcesArray[0], internalForcesArray[1], i_zz_cs, i_yy_cs, centroid_z, centroid_y)
         boomArray3D[index][0] = boomAreaClass.calculateBoomAreas(pm.sparthickness, pm.skinthickness, stringer_area)
 
         #Calculate MOI for each cross section
@@ -159,7 +159,7 @@ for index in xrange(xtab.shape[0]):
     internalForcesArray = [m_yy_cs, m_zz_cs, v_y_cs, v_z_cs]
     ytab.append(internalForcesArray)
 
-    boomAreaClass = ba(boomArray, internalForcesArray[0], internalForcesArray[1], i_zz_cs, i_yy_cs)
+    boomAreaClass = ba(boomArray, internalForcesArray[0], internalForcesArray[1], i_zz_cs, i_yy_cs, centroid_z, centroid_y)
     boomArray3D[index][0] = boomAreaClass.calculateBoomAreas(pm.sparthickness, pm.skinthickness, stringer_area)
 
 npYArray = np.array(ytab)

@@ -18,12 +18,14 @@ class boomAreas:
     connection_type = "skin" or "spar"
     
     """
-    def __init__(self, boomArray, m_y, m_z, I_yy, I_zz):
+    def __init__(self, boomArray, m_y, m_z, I_yy, I_zz, centroid_z, centroid_y):
         self.boomArray = boomArray
         self.m_y = m_y
         self.m_z = m_z
         self.I_yy = I_yy
         self.I_zz = I_zz
+        self.centroid_z = centroid_z
+        self.centroid_y = centroid_y
 
     def calculateBoomAreas(self, spar_thickness, skin_thickness, stringer_area):
         for index in xrange(len(self.boomArray)):
@@ -43,8 +45,10 @@ class boomAreas:
                     ratio = 0.
                     if self.m_z != 0.:
                         connectedBoomDistanceToNeutralAxis = self.getDistanceToNeutralAxis(boom[i])
-                        if abs(ownDistanceToNeutralAxis) >= 0.000001 and abs(connectedBoomDistanceToNeutralAxis) >= 0.000001:
+                        if abs(ownDistanceToNeutralAxis) >= 0.00001 and abs(connectedBoomDistanceToNeutralAxis) >= 0.00001:
                             ratio = connectedBoomDistanceToNeutralAxis/ownDistanceToNeutralAxis
+                        elif abs(connectedBoomDistanceToNeutralAxis >= 0.00001):
+                            ratio = abs(connectedBoomDistanceToNeutralAxis)
                         else:
                             ratio = 0.
 
@@ -65,9 +69,18 @@ class boomAreas:
 
     def getDistanceToNeutralAxis(self, index_boom):
         boom = self.boomArray[index_boom]
-        z = boom[0]
-        y = boom[1]
-        return abs((self.I_yy/self.I_zz)*y - (self.m_y/self.m_z)*z)/math.sqrt((self.m_y/self.m_z)**2. + (self.I_yy/self.I_zz)**2.)
+        z = boom[0] - self.centroid_z
+        y = boom[1] - self.centroid_y
+        if self.m_y == 0:
+            d = y
+        elif self.m_z == 0:
+            d = z
+        else:
+            dist = abs((self.I_yy/self.I_zz)*y - (self.m_y/self.m_z)*z)/math.sqrt((self.m_y/self.m_z)**2. + (self.I_yy/self.I_zz)**2.)
+            signPart = y / z - self.m_y * self.I_zz / (self.m_z * self.I_yy)
+            sign = signPart / math.sqrt(signPart**2)
+            d = dist * sign
+        return d
 
     def calculateBoomArea(self, thickness, distance, distance_ratio):
         return ((thickness*distance)/6.)*(2. + distance_ratio)
