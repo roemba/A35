@@ -78,7 +78,7 @@ class beamTheory:
         # Hinge locations and forces in lists
         xloc =      [x_1, x_2, x_3, x_2 - x_a,  x_2 + x_a   ]
         zForce =    [A_z, B_z, 0.,  R_z,        P           ]
-        yForce =    [A_y, B_y, C_y  0.,         0.,         ]
+        yForce =    [A_y, B_y, C_y, 0.,         0.,         ]
         for hinge in range(3):
             if x >= xloc[hinge]:
                 T += (zForce[hinge] * np.cos(theta) + yForce[hinge] * np.sin(theta)) * (h/2. - x_sc)
