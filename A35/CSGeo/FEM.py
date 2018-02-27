@@ -1,6 +1,5 @@
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 class FEM:
     """
@@ -390,26 +389,3 @@ class FEM:
 
 # OUTPUT -- [   z   ,   y   ,   area    ,   ... neighbours ...  ]
 
-testArray = FEM.boomPositions(5, 5, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)
-
-# For visual representation of booms
-stringerBoom = np.array([0.05, 0.])
-for boom in testArray:
-    if boom[2] != 0:
-        stringerBoom = np.vstack([stringerBoom, [boom[0], boom[1]]])
-
-# Visual representation of all booms
-z = testArray[:, 0]
-y = testArray[:, 1]
-
-plt.hlines(0, -0.6, 0.05)
-plt.vlines(-0.225/2, -0.225/2 - 0.05, 0.225/2 + 0.05)
-plt.vlines(0, -0.225/2 - 0.05, 0.225/2 + 0.05)
-plt.scatter(z, y)
-plt.scatter(stringerBoom[:, 0], stringerBoom[:, 1], marker='*', c='red')
-plt.show()
-
-# Current problems:
-# Discontinuity sector 2 near LE                                        -- solved
-# Check corner cases neighbours - expect one anomaly (end sector 3)     -- solved
-# neigbour list incorrect? (check TE // idx 0)                          -- solved
