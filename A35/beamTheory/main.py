@@ -68,12 +68,12 @@ class beamTheory:
         return [m_yy, m_zz, v_y, v_z]
 
     @staticmethod
-    def calculateTorqueForX(q, P, R_z, A_z, A_y, B_z, B_y, C_y, c_a, h, theta, x_3, x_2, x_1, x_a, x_sc, x):
-        # externally define shear center x_sc for iteration
+    def calculateTorqueForX(q, P, R_z, A_z, A_y, B_z, B_y, C_y, c_a, h, theta, x_3, x_2, x_1, x_a, z_sc, x):
+        # externally define shear center z_sc for iteration
         # Shear center at all times at z = 0 (cross-sectional coordinate frame)
 
         # Torque due to aerodynamic load q
-        T = q * (x_sc - 0.25 * c_a) * np.cos(theta) * x
+        T = q * (z_sc - 0.25 * c_a) * np.cos(theta) * x
 
         # Hinge locations and forces in lists
         xloc =      [x_1, x_2, x_3, x_2 - x_a,  x_2 + x_a   ]
@@ -81,10 +81,10 @@ class beamTheory:
         yForce =    [A_y, B_y, C_y, 0.,         0.,         ]
         for hinge in range(3):
             if x >= xloc[hinge]:
-                T += (zForce[hinge] * np.cos(theta) + yForce[hinge] * np.sin(theta)) * (h/2. - x_sc)
+                T += (zForce[hinge] * np.cos(theta) + yForce[hinge] * np.sin(theta)) * (h/2. - z_sc)
         for actuator in range(3, 3 + 2):
             if x >= xloc[actuator]:
-                T += zForce[actuator] * (h / 2. * np.cos(theta) - x_sc * np.sin(theta))
+                T += zForce[actuator] * (h / 2. * np.cos(theta) - z_sc * np.sin(theta))
 
         return T
 
