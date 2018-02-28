@@ -142,6 +142,8 @@ print
 #Calculate all the shear forces and bending moments using analytical MoI
 i_zz_cs = 0.00001153484934
 i_yy_cs = 0.00006369185039
+#z_sc = pm.height/2.
+z_sc = 0.26930523 #analytical solution
 
 reactionForces = beamTheory.staticEquilibrium(pm.youngsmodulus, i_zz_cs, pm.chord,
                                               pm.span,
@@ -151,7 +153,7 @@ reactionForces = beamTheory.staticEquilibrium(pm.youngsmodulus, i_zz_cs, pm.chor
                                               pm.height, pm.verticaldisplacementhinge3,
                                               pm.verticaldisplacementhinge1, pm.maxupwarddeflection).A1
 
-ytab = []
+crosssections = []
 for index in xrange(xtab.shape[0]):
     boomArray = boomArray3D[index][0]
     x = xtab[index]
@@ -173,19 +175,20 @@ for index in xrange(xtab.shape[0]):
                                             pm.maxupwarddeflection,
                                             pm.xlocation3, pm.xlocation2, pm.xlocation1,
                                             pm.d12,
-                                            pm.height / 2., x)
+                                            z_sc, x)
 
     m_zz_cs, m_yy_cs = coordinateSwap.APtoCS(externalForcesArray[1], externalForcesArray[0],
                                              pm.maxupwarddeflection)
     v_z_cs, v_y_cs = coordinateSwap.APtoCS(externalForcesArray[3], externalForcesArray[2],
                                            pm.maxupwarddeflection)
     internalForcesArray = [m_yy_cs, m_zz_cs, v_y_cs, v_z_cs, torque]
-    ytab.append(internalForcesArray)
+    crosssections.append(internalForcesArray)
 
     boomAreaClass = ba(boomArray, internalForcesArray[0], internalForcesArray[1], i_zz_cs, i_yy_cs, centroid_z, centroid_y)
     boomArray3D[index][0] = boomAreaClass.calculateBoomAreas(pm.sparthickness, pm.skinthickness, stringer_area)
 
-npYArray = np.array(ytab)
+#Draw some figures
+npYArray = np.array(crosssections)
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(111)
 ax2.set_title("Bending moments for $n = " + str(n_of_crossections) + "$")
@@ -227,5 +230,44 @@ if saveFigs:
     fig3.savefig("shear_forces.png")
     fig4.savefig("torque.png")
 
-outputArray = FEM.discretization(5, 5, 5, pm.chord, pm.height, pm.stiffenernumber)
-print outputArray
+numberOfBoomsArray = FEM.discretization(5, 5, 5, pm.chord, pm.height, pm.stiffenernumber)
+print int(numberOfBoomsArray[0][0]), int(numberOfBoomsArray[1][0]), int(numberOfBoomsArray[3][0])
+
+openShearFlowCrossSections = []
+for index in xrange(xtab.shape[0]):
+    boomArray = boomArray3D[index][0]
+    x = xtab[index]
+
+    openShearFlow = openSectionShearFlow.totOpenCalc(i_zz_cs, i_yy_cs, 0., crosssections[index][3], crosssections[index][2],
+                                             boomArray, int(numberOfBoomsArray[0][0]), int(numberOfBoomsArray[1][0]),
+                                             int(numberOfBoomsArray[3][0]))
+
+    openShearFlowCrossSections.append(openShearFlow)
+
+    if index == 5:
+        fig5 = plt.figure(figsize=(8, 4.8))
+        ax5 = fig5.add_subplot(111)
+        ax5.hlines(0, -0.6, 0.05)
+        ax5.vlines(-0.225/2, -0.225/2 - 0.05, 0.225/2 + 0.05)
+        ax5.vlines(0, -0.225/2 - 0.05, 0.225/2 + 0.05)
+        ax5.set_xlabel("$z$ ($m$)")
+        ax5.set_ylabel("$y$ ($m$)")
+        ax5.grid()
+        ax5.scatter(initial2DBoomArray[:, 0], initial2DBoomArray[:, 1], label="Boom")
+        ax5.scatter(stringerBoom[:, 0], stringerBoom[:, 1], marker='*', c='red', label="Stringer")
+        ax5.legend()
+        for i in xrange(initial2DBoomArray.shape[0]):
+            ax5.annotate(i, (initial2DBoomArray[i, 0], initial2DBoomArray[i, 1]))
+        for shearArray in openShearFlow:
+            startBoomIndex = int(shearArray[1])
+            startBoom = boomArray[startBoomIndex]
+            endBoomIndex = int(shearArray[2])
+            endBoom = boomArray[endBoomIndex]
+            openShearFlow = shearArray[3]
+            ax5.plot([startBoom[0], endBoom[0]], [startBoom[1], endBoom[1]])
+
+        fig5.show()
+
+
+
+print openShearFlowCrossSections[5]

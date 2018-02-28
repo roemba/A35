@@ -39,14 +39,14 @@ class openSectionShearFlow:
          Output is dependent on the currently evaluated cell.
         '''
         # Cell 2 (Trailing edge and spar)
-        for panelIndex in range(2 * (n_sector_1 + 1) + n_sector_4 + 1):
+        for panelIndex in range(2 * (n_sector_1) + n_sector_4):
             cellNumber = 2
             # Sector 1 (skin)
             if panelIndex == 0:
                 q_b = 0.
                 startBoom = 0
                 endBoom = 1
-                outArray = np.array([cellNumber, startBoom, endBoom, q_b])
+                outArray = np.array([cellNumber, startBoom, endBoom, q_b, panelIndex])
                 continue
             elif panelIndex <= n_sector_1:
                 startBoom = panelIndex
@@ -56,19 +56,19 @@ class openSectionShearFlow:
             elif panelIndex <= n_sector_1 + n_sector_4 + 1:
                 if panelIndex == n_sector_1 + 1:
                     startBoom = panelIndex
-                    endBoom = n_sector_1 * 2 + n_sector_2 + 2
-                elif panelIndex == n_sector_1 + 1 + n_sector_4:
+                    endBoom = n_sector_1 * 2 + n_sector_2 + 3
+                elif panelIndex == n_sector_1 + n_sector_4 + 1:
                     startBoom = n_sector_1 + n_sector_2 + 1 + panelIndex
-                    endBoom = n_sector_1 + n_sector_1 + 2
+                    endBoom = n_sector_1 + n_sector_2 + 2
                 else:
                     startBoom = n_sector_1 + n_sector_2 + 1 + panelIndex
                     endBoom = startBoom + 1
 
             # Sector 3 (skin)
             else:
-                startBoom = panelIndex + n_sector_2 - 2
+                startBoom = panelIndex + n_sector_2 - 5
                 endBoom = startBoom + 1
-                if panelIndex == 2 * (n_sector_1 + 1) + n_sector_4:
+                if panelIndex == 2 * (n_sector_1) + n_sector_4 - 1:
                     endBoom = 0    # connected to boom 0 (TE)
 
             z, y, area = boomArray[startBoom, :3]
@@ -79,10 +79,10 @@ class openSectionShearFlow:
             else:
                 q_b += outArray[-1, -1] # Because it's supposed to be a cumulative thing
 
-            outArray = np.vstack([outArray, [cellNumber, startBoom, endBoom, q_b]])
+            outArray = np.vstack([outArray, [cellNumber, startBoom, endBoom, q_b, panelIndex]])
 
         # Cell 1 (Leading edge and spar)
-        for panelIndex in range(n_sector_2 + n_sector_4 + 2):
+        for panelIndex in range(n_sector_2 + n_sector_4 + 1):
             cellNumber = 1
             panelOffset = n_sector_1 + 1
             # Sector 2 (skin)
@@ -91,7 +91,7 @@ class openSectionShearFlow:
                 startBoom = panelOffset
                 endBoom = 1 + panelOffset
                 # Setting to 0 again since different cell, building upon this one now
-                outArray = np.vstack([outArray, [cellNumber, startBoom, endBoom, q_b]])
+                outArray = np.vstack([outArray, [cellNumber, startBoom, endBoom, q_b, panelIndex]])
                 continue
             elif panelIndex <= n_sector_2:
                 startBoom = panelIndex + panelOffset
@@ -106,14 +106,14 @@ class openSectionShearFlow:
                 else:
                     startBoom = 2 * panelOffset + 2 * n_sector_2 + n_sector_4 + 1 - panelIndex
                     endBoom = startBoom - 1
-                    if panelIndex == n_sector_2 + n_sector_4 + 1:
+                    if panelIndex == n_sector_2 + n_sector_4:
                         endBoom = panelOffset
 
             z, y, area = boomArray[startBoom, :3]
             q_b = openSectionShearFlow.perBoomCalc(I_zz, I_yy, I_zy, V_z, V_y, z, y, area)
             q_b += outArray[-1, -1]
 
-            outArray = np.vstack([outArray, [cellNumber, startBoom, endBoom, q_b]])
+            outArray = np.vstack([outArray, [cellNumber, startBoom, endBoom, q_b, panelIndex]])
 
         return outArray
         # outArray has the form [cellNumber, startBoom, endBoom, q_b], q_b is adjusted for counterclockwise positive.
