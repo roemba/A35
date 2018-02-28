@@ -264,7 +264,7 @@ class FEM:
                 else:
                     pitch = normPitch
                 if sector + 1 == 4:     # prevent difficult code requirements
-                    pitch = normPitch
+                    pitch = h / (int(booms) + 1)
 
                 if sector + 1 == 4:   # getting weird stuff; prevention
                     area = int(0)
