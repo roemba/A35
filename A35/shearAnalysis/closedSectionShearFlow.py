@@ -45,8 +45,8 @@ class closedSectionShearFlow:
 
                 if int(cellNumber) == cell:
                     # Find boom values for associated booms
-                    boom1 = boomArray[startBoom]
-                    boom2 = boomArray[endBoom]
+                    boom1 = boomArray[int(startBoom)]
+                    boom2 = boomArray[int(endBoom)]
 
                     # p: perp. dist. from line of application
                     # l: length of panel

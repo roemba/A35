@@ -390,5 +390,5 @@ class FEM:
 
 # OUTPUT -- [   z   ,   y   ,   area    ,   ... neighbours ...  ]
 
-print FEM.boomPositions(5, 5, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)[:, :2]
+#print FEM.boomPositions(5, 5, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)[:, :2]
 

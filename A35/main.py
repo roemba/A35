@@ -7,24 +7,24 @@ from CSGeo.boomAreas import boomAreas as ba
 from CSGeo.numericalMOI import numericalMOI
 from CSGeo.FEM import FEM
 from shearAnalysis.openSectionShearFlow import openSectionShearFlow
+from shearAnalysis.closedSectionShearFlow import closedSectionShearFlow
 import matplotlib as mplt
 import matplotlib.pyplot as plt
 import numpy as np
 
 saveFigs = False
 
-#Replace these values with initial condition
-# i_zz_cs = 0.000014925648
-# i_yy_cs = 0.000014925648
-# i_zy_cs = 0.
+# ------------------------------------------------------------------------------------
+# Create a boom mesh
+# ------------------------------------------------------------------------------------
 initial2DBoomArray = FEM.boomPositions(5, 5, 5, pm.chord, pm.height, pm.stiffenernumber,
                                        pm.stiffenerheight, pm.stiffenerwidth,
                                        pm.stiffenerthickness)
 stringer_area = (pm.stiffenerheight-pm.stiffenerthickness)*pm.stiffenerthickness + pm.stiffenerthickness*pm.stiffenerwidth
-print pm.verticaldisplacementhinge1, pm.verticaldisplacementhinge3
 
-
-# For visual representation of booms
+# ------------------------------------------------------------------------------------
+# Draw figure of boom locations
+# ------------------------------------------------------------------------------------
 stringerBoom = np.array([0., 0.])
 for boom in initial2DBoomArray:
     if boom[2] != 0:
@@ -48,15 +48,22 @@ boomArray = [z, y, A, [k, connection_type], [l, type], [(m), type]]
 
 """
 
+# ------------------------------------------------------------------------------------
+# Calculating the centroid analytically
+#
 # Setting reference coordinate system at LE
 # (z coincides with chord, positive in direction of flight)
 # (y positive upward flight direction)
+# ------------------------------------------------------------------------------------
 centroid_z = - Centroid.computeCentroid(pm.chord, pm.height, pm.skinthickness,
                                         pm.sparthickness, pm.stiffenerthickness,
                                         pm.stiffenerwidth, pm.stiffenerheight,
                                         pm.stiffenernumber)
 centroid_y = 0.
 
+# ------------------------------------------------------------------------------------
+# Calculate the initial moment of inertia for the iteration
+# ------------------------------------------------------------------------------------
 i_zz_cs, i_yy_cs, i_zy_cs = numericalMOI.getMOI(centroid_z, centroid_y, initial2DBoomArray)
 
 n_of_crossections = 500
@@ -66,12 +73,14 @@ boomArray3D = []
 for x in xtab:
     boomArray3D.append([initial2DBoomArray, [i_zz_cs, i_yy_cs, i_zy_cs]])
 
-#Start loop
+# ------------------------------------------------------------------------------------
+# Start iterating the moment of inertia until convergence has been achieved
+# ------------------------------------------------------------------------------------
 ytab = []
 i_zz_cs_old = 0.00000000000000001
 i = 0
-#while abs((i_zz_cs/i_zz_cs_old)*100. - 100.) > 1.:
-while i <= 10:
+while abs((i_zz_cs/i_zz_cs_old)*100. - 100.) > 1.:
+#while i <= 10:
     i_zz_cs_old = i_zz_cs
     i += 1
     print "Loop: " + str(i)
@@ -187,7 +196,10 @@ for index in xrange(xtab.shape[0]):
     boomAreaClass = ba(boomArray, internalForcesArray[0], internalForcesArray[1], i_zz_cs, i_yy_cs, centroid_z, centroid_y)
     boomArray3D[index][0] = boomAreaClass.calculateBoomAreas(pm.sparthickness, pm.skinthickness, stringer_area)
 
-#Draw some figures
+# ------------------------------------------------------------------------------------
+# Draw figures of bending, shear and torque
+# ------------------------------------------------------------------------------------
+
 npYArray = np.array(crosssections)
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(111)
@@ -230,6 +242,10 @@ if saveFigs:
     fig3.savefig("shear_forces.png")
     fig4.savefig("torque.png")
 
+# ------------------------------------------------------------------------------------
+# Start calculating shear flows
+# ------------------------------------------------------------------------------------
+
 numberOfBoomsArray = FEM.discretization(5, 5, 5, pm.chord, pm.height, pm.stiffenernumber)
 print int(numberOfBoomsArray[0][0]), int(numberOfBoomsArray[1][0]), int(numberOfBoomsArray[3][0])
 
@@ -268,6 +284,7 @@ for index in xrange(xtab.shape[0]):
 
         fig5.show()
 
-
+    closedSectionShearFlow.calculation(crosssections[index][2], pm.chord, pm.height, pm.skinthickness, pm.sparthickness,
+                                       z_sc, boomArray, openShearFlow)
 
 print openShearFlowCrossSections[5]
