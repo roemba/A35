@@ -8,28 +8,6 @@ class openSectionShearFlow:
     boomArray has index: [z, y, area, k, k_type, l, l_type, m, m_type, isStringerBool]
     Outputs: q_b
     """
-    @staticmethod
-    def calculation(I_zz, I_yy, I_zy, V_z, V_y, boomArray):
-
-        arrayAz = []
-        arrayAy = []
-
-        for i in range(0, len(boomArray)):
-            arrayAz.append(boomArray[i, 2] * boomArray[i, 0])
-            arrayAy.append(boomArray[i, 2] * boomArray[i, 1])
-
-        print arrayAz
-        print arrayAy
-
-        sumAz = np.sum(arrayAz)
-        sumAy = np.sum(arrayAy)
-        '''
-        p1 = sumAz * (I_zz * V_z - I_zy * V_y) / (I_zz * I_yy - I_zy**2)
-        p2 = sumAy * (I_yy*V_y - (I_zy*V_z)) / (I_zz * I_yy - I_zy**2)
-
-        q_b = -1.*p1 - p2
-        '''
-        return q_b
 
     @staticmethod
     def perBoomCalc(I_zz, I_yy, I_zy, V_z, V_y, z, y, area):
@@ -53,7 +31,7 @@ class openSectionShearFlow:
         return - q1 - q2
 
     @staticmethod
-    def totOpenCalc(I_zz, I_yy, I_zy, V_z, V_y, boomArray, n_sector_1, n_sector_2, n_sector_4, C_a):
+    def totOpenCalc(I_zz, I_yy, I_zy, V_z, V_y, boomArray, n_sector_1, n_sector_2, n_sector_4):
         '''
          This part function uses perBoomCalc to find the shear flows in each section
          taking the first link in each cell (by convention) to have zero shear.
