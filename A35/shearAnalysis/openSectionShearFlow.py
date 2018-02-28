@@ -53,7 +53,7 @@ class openSectionShearFlow:
         return - q1 - q2
 
     @staticmethod
-    def totOpenCalc(I_zz, I_yy, I_zy, V_z, V_y, boomArray, n_sector_1, n_sector_2, n_sector_4, C_a):
+    def totOpenCalc(I_zz, I_yy, I_zy, V_z, V_y, boomArray, n_sector_1, n_sector_2, n_sector_4):
         '''
          This part function uses perBoomCalc to find the shear flows in each section
          taking the first link in each cell (by convention) to have zero shear.
