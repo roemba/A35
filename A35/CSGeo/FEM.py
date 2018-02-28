@@ -392,26 +392,3 @@ class FEM:
 
 testArray = FEM.boomPositions(5, 5, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)
 
-# For visual representation of booms
-stringerBoom = np.array([0.05, 0.])
-for boom in testArray:
-    if boom[2] != 0:
-        stringerBoom = np.vstack([stringerBoom, [boom[0], boom[1]]])
-
-# Visual representation of all booms
-z = testArray[:, 0]
-y = testArray[:, 1]
-
-fig = plt.figure()
-ax = fig.add_subplot(111)
-ax.hlines(0, -0.6, 0.05)
-ax.vlines(-0.225/2, -0.225/2 - 0.05, 0.225/2 + 0.05)
-ax.vlines(0, -0.225/2 - 0.05, 0.225/2 + 0.05)
-ax.set_xlabel("$z$ ($m$)")
-ax.set_ylabel("$y$ ($m$)")
-ax.grid()
-ax.scatter(z, y, label="Boom")
-ax.scatter(stringerBoom[:, 0], stringerBoom[:, 1], marker='*', c='red', label="Stringer")
-ax.legend()
-fig.savefig("boom_locations.png")
-fig.show()

@@ -10,6 +10,8 @@ import matplotlib as mplt
 import matplotlib.pyplot as plt
 import numpy as np
 
+saveFigs = False
+
 #Replace these values with initial condition
 # i_zz_cs = 0.000014925648
 # i_yy_cs = 0.000014925648
@@ -19,6 +21,26 @@ initial2DBoomArray = FEM.boomPositions(5, 5, 5, pm.chord, pm.height, pm.stiffene
                                        pm.stiffenerthickness)
 stringer_area = (pm.stiffenerheight-pm.stiffenerthickness)*pm.stiffenerthickness + pm.stiffenerthickness*pm.stiffenerwidth
 print pm.verticaldisplacementhinge1, pm.verticaldisplacementhinge3
+
+
+# For visual representation of booms
+stringerBoom = np.array([0.05, 0.])
+for boom in initial2DBoomArray:
+    if boom[2] != 0:
+        stringerBoom = np.vstack([stringerBoom, [boom[0], boom[1]]])
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.hlines(0, -0.6, 0.05)
+ax.vlines(-0.225/2, -0.225/2 - 0.05, 0.225/2 + 0.05)
+ax.vlines(0, -0.225/2 - 0.05, 0.225/2 + 0.05)
+ax.set_xlabel("$z$ ($m$)")
+ax.set_ylabel("$y$ ($m$)")
+ax.grid()
+ax.scatter(initial2DBoomArray[:, 0], initial2DBoomArray[:, 1], label="Boom")
+ax.scatter(stringerBoom[:, 0], stringerBoom[:, 1], marker='*', c='red', label="Stringer")
+ax.legend()
+fig.show()
 
 """
 boomArray = [z, y, A, [k, connection_type], [l, type], [(m), type]]
@@ -156,7 +178,7 @@ for index in xrange(xtab.shape[0]):
                                              pm.maxupwarddeflection)
     v_z_cs, v_y_cs = coordinateSwap.APtoCS(externalForcesArray[3], externalForcesArray[2],
                                            pm.maxupwarddeflection)
-    internalForcesArray = [m_yy_cs, m_zz_cs, v_y_cs, v_z_cs]
+    internalForcesArray = [m_yy_cs, m_zz_cs, v_y_cs, v_z_cs, torque]
     ytab.append(internalForcesArray)
 
     boomAreaClass = ba(boomArray, internalForcesArray[0], internalForcesArray[1], i_zz_cs, i_yy_cs, centroid_z, centroid_y)
@@ -172,8 +194,7 @@ ax2.plot(xtab, npYArray[:, 1], label="$M_{z_{cs}}$")
 ax2.grid(b=True, which='both', color='0.65', linestyle='-')
 ax2.legend()
 ax2.set_xlabel("Span ($m$)")
-ax2.set_ylabel("Moment ($Nm^{-1}$)")
-fig2.savefig("bending_moments.png")
+ax2.set_ylabel("Moment ($Nm$)")
 fig2.show()
 
 fig3 = plt.figure(figsize=(7,4.8))
@@ -186,5 +207,21 @@ ax3.grid(b=True, which='both', color='0.65', linestyle='-')
 ax3.legend()
 ax3.set_xlabel("Span ($m$)")
 ax3.set_ylabel("Force ($N$)")
-fig3.savefig("shear_forces.png")
 fig3.show()
+
+fig4 = plt.figure()
+ax4 = fig4.add_subplot(111)
+ax4.set_title("Torque for $n = " + str(n_of_crossections) + "$")
+ax4.set_xlim(0, pm.span)
+ax4.plot(xtab, npYArray[:, 4], label="$T_{CS}$")
+ax4.grid(b=True, which='both', color='0.65', linestyle='-')
+ax4.legend()
+ax4.set_xlabel("Span ($m$)")
+ax4.set_ylabel("Torque ($Nm$)")
+fig4.show()
+
+if saveFigs:
+    fig.savefig("boom_locations.png")
+    fig2.savefig("bending_moments.png")
+    fig3.savefig("shear_forces.png")
+    fig4.savefig("torque.png")
