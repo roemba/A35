@@ -1,4 +1,5 @@
 import numpy as np
+from beamTheory.main import beamTheory as bm
 from math import *
 
 class closedSectionShearFlow:
@@ -81,5 +82,35 @@ class closedSectionShearFlow:
                         [-loopArray[1, 4] + loopArray[0, 5] - V_y * z_sc]])
 
         q_s01, q_s02, d_theta_d_x = np.linalg.solve(matrix, ans)
-        return q_s01, q_s02, d_theta_d_x
+        return q_s01, q_s02, d_theta_d_x, loopArray
+
+
+    # Idea behind torsionUpdate: run loop to find convergent value for Torsion and shear center
+    # Might need to make this a for loop for a set amount of iterations to see what happens..
+    @staticmethod
+    def torsionUpdate(T0, V_y, C_a, h, t_sk, t_sp, G, z_sc, boomArray, openShearArray,
+                      q, P, R_z, A_z, A_y, B_z, B_y, C_y, theta, x_3, x_2, x_1, x_a, x):
+        run = True
+        while run:
+            q_s01, q_s02, d_theta_d_x, loopArray = closedSectionShearFlow.calculation\
+                                                            (V_y, C_a, h, t_sk, t_sp, z_sc, boomArray, openShearArray)
+
+            A1 = np.pi * h / 2.
+            A2 = (C_a - h / 2.) * h / 2.
+
+            l_t1 = loopArray[0, 1]
+            l_t2 = loopArray[1, 1]
+
+            cellFactor1 = A1 ** 2 * l_t1
+            cellFactor2 = A2 ** 2 * l_t2
+
+            z_sc = - V_y * 4 * G * d_theta_d_x * (cellFactor1 + cellFactor2)
+
+            T = bm.calculateTorqueForX(q, P, R_z, A_z, A_y, B_z, B_y, C_y, C_a, h, theta, x_3, x_2, x_1, x_a, z_sc, x)
+            if abs(T0 - T) / T < 0.01:
+                run = False
+            else:
+                T0 = T
+
+        return T, z_sc, q_s01, q_s02, d_theta_d_x
 
