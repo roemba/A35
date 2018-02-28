@@ -3,7 +3,7 @@ from math import *
 
 class closedSectionShearFlow:
     """
-    Inputs: I_zz, I_yy, I_zy, V_z, V_y, L_c, L_t, h, G, t_sk, t_sp, boomArray, openShearArray
+    Inputs: V_y, C_a, h, t_sk, t_sp, z_sc, boomArray, openShearArray
     boomArray has index: [z, y, area, k, k_type, l, l_type, m, m_type, isStringerBool]
     openShearArray has index: [cellNumber, startBoom, endBoom, q_b]
 
@@ -11,10 +11,14 @@ class closedSectionShearFlow:
     """
     @staticmethod
     def perpDistShearCenter(z1, y1, z2, y2, z_sc):
-        num = (z1 + (z1 - z2) / 2. - z_sc) * (y1 - y2) / (z1 - z2)
-        num += y1 + (y1 - y2) / 2.
-        den = np.sqrt((y1 - y2)**2 + (z1 - z2)**2)
-        p = num / den
+        den = np.sqrt((y1 - y2) ** 2 + (z1 - z2) ** 2)
+        if z1 == z2:
+            p = z1 - z_sc
+        else:
+            num = (z1 + (z1 - z2) / 2. - z_sc) * (y1 - y2) / (z1 - z2)
+            num += y1 + (y1 - y2) / 2.
+            p = num / den
+
         l = den
         return p, l
 
