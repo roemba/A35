@@ -24,7 +24,7 @@ print pm.verticaldisplacementhinge1, pm.verticaldisplacementhinge3
 
 
 # For visual representation of booms
-stringerBoom = np.array([0.05, 0.])
+stringerBoom = np.array([0., 0.])
 for boom in initial2DBoomArray:
     if boom[2] != 0:
         stringerBoom = np.vstack([stringerBoom, [boom[0], boom[1]]])
