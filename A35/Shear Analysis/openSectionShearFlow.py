@@ -4,8 +4,8 @@ class openSectionShearFlow:
     """
     This is only per cell, there are two cells in total.
 
-    Inputs: I_zz, I_yy, I_zy, z_boom, y_boom, boom_area (, k, k_type, l, l_type, m, m_type)
-    (part in brackets not necessary, as part of boomArray that can be stripped)
+    Inputs: I_zz, I_yy, I_zy, V_z, V_y, boomArray
+    boomArray has index: [z, y, area, k, k_type, l, l_type, m, m_type, isStringerBool]
     Outputs: q_b
     """
     @staticmethod
