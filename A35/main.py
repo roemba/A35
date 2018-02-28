@@ -6,6 +6,7 @@ from CSGeo.areaMomentOfInertia import areaMomentOfInertia as AMOI
 from CSGeo.boomAreas import boomAreas as ba
 from CSGeo.numericalMOI import numericalMOI
 from CSGeo.FEM import FEM
+from shearAnalysis.openSectionShearFlow import openSectionShearFlow
 import matplotlib as mplt
 import matplotlib.pyplot as plt
 import numpy as np
@@ -225,3 +226,6 @@ if saveFigs:
     fig2.savefig("bending_moments.png")
     fig3.savefig("shear_forces.png")
     fig4.savefig("torque.png")
+
+outputArray = FEM.discretization(5, 5, 5, pm.chord, pm.height, pm.stiffenernumber)
+print outputArray
