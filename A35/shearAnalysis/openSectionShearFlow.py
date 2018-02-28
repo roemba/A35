@@ -79,7 +79,7 @@ class openSectionShearFlow:
             else:
                 q_b += outArray[-1, -1] # Because it's supposed to be a cumulative thing
 
-            np.vstack([outArray, [cellNumber, startBoom, endBoom, q_b]])
+            outArray = np.vstack([outArray, [cellNumber, startBoom, endBoom, q_b]])
 
         # Cell 1 (Leading edge and spar)
         for panelIndex in range(n_sector_2 + n_sector_4 + 2):
@@ -91,7 +91,7 @@ class openSectionShearFlow:
                 startBoom = panelOffset
                 endBoom = 1 + panelOffset
                 # Setting to 0 again since different cell, building upon this one now
-                np.vstack([outArray, [cellNumber, startBoom, endBoom, q_b]])
+                outArray = np.vstack([outArray, [cellNumber, startBoom, endBoom, q_b]])
                 continue
             elif panelIndex <= n_sector_2:
                 startBoom = panelIndex + panelOffset
@@ -113,7 +113,7 @@ class openSectionShearFlow:
             q_b = openSectionShearFlow.perBoomCalc(I_zz, I_yy, I_zy, V_z, V_y, z, y, area)
             q_b += outArray[-1, -1]
 
-            np.vstack([outArray, [cellNumber, startBoom, endBoom, q_b]])
+            outArray = np.vstack([outArray, [cellNumber, startBoom, endBoom, q_b]])
 
         return outArray
         # outArray has the form [cellNumber, startBoom, endBoom, q_b], q_b is adjusted for counterclockwise positive.
