@@ -74,7 +74,10 @@ class openSectionShearFlow:
             z, y, area = boomArray[startBoom, :3]
             # negative because clockwise instead of counter-clockwise
             q_b = - openSectionShearFlow.perBoomCalc(I_zz, I_yy, I_zy, V_z, V_y, z, y, area)
-            q_b += outArray[-1, -1] # Because it's supposed to be a cumulative thing
+            if panelIndex == 1:
+                q_b = outArray[-1]
+            else:
+                q_b += outArray[-1, -1] # Because it's supposed to be a cumulative thing
 
             np.vstack([outArray, [cellNumber, startBoom, endBoom, q_b]])
 
