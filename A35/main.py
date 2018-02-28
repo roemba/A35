@@ -48,7 +48,7 @@ ytab = []
 i_zz_cs_old = 0.00000000000000001
 i = 0
 #while abs((i_zz_cs/i_zz_cs_old)*100. - 100.) > 1.:
-while i <= 100:
+while i <= 10:
     i_zz_cs_old = i_zz_cs
     i += 1
     print "Loop: " + str(i)
@@ -165,19 +165,26 @@ for index in xrange(xtab.shape[0]):
 npYArray = np.array(ytab)
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(111)
-ax2.set_title("Bending moments for " + str(n_of_crossections) + " cross sections")
-ax2.plot(xtab, npYArray[:, 0], label="M_yy_cs")
-ax2.plot(xtab, npYArray[:, 1], label="M_zz_cs")
+ax2.set_title("Bending moments for $n = " + str(n_of_crossections) + "$")
+ax2.set_xlim(0, pm.span)
+ax2.plot(xtab, npYArray[:, 0], label="$M_{y_{cs}}$")
+ax2.plot(xtab, npYArray[:, 1], label="$M_{z_{cs}}$")
 ax2.grid(b=True, which='both', color='0.65', linestyle='-')
 ax2.legend()
-ax2.set_xlabel("x")
+ax2.set_xlabel("Span ($m$)")
+ax2.set_ylabel("Moment ($Nm^{-1}$)")
+fig2.savefig("bending_moments.png")
 fig2.show()
 
-fig3 = plt.figure()
+fig3 = plt.figure(figsize=(7,4.8))
 ax3 = fig3.add_subplot(111)
-ax3.set_title("Shear forces for " + str(n_of_crossections) + " cross sections")
-ax3.plot(xtab, npYArray[:, 2], label="V_y_cs")
-ax3.plot(xtab, npYArray[:, 3], label="V_z_cs")
+ax3.set_title("Shear forces for $n = " + str(n_of_crossections) + "$")
+ax3.set_xlim(0, pm.span)
+ax3.plot(xtab, npYArray[:, 2], label="$V_{y_{cs}}$")
+ax3.plot(xtab, npYArray[:, 3], label="$V_{z_{cs}}$")
+ax3.grid(b=True, which='both', color='0.65', linestyle='-')
 ax3.legend()
-ax3.set_xlabel("x")
+ax3.set_xlabel("Span ($m$)")
+ax3.set_ylabel("Force ($N$)")
+fig3.savefig("shear_forces.png")
 fig3.show()

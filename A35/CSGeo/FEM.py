@@ -402,14 +402,16 @@ for boom in testArray:
 z = testArray[:, 0]
 y = testArray[:, 1]
 
-plt.hlines(0, -0.6, 0.05)
-plt.vlines(-0.225/2, -0.225/2 - 0.05, 0.225/2 + 0.05)
-plt.vlines(0, -0.225/2 - 0.05, 0.225/2 + 0.05)
-plt.scatter(z, y)
-plt.scatter(stringerBoom[:, 0], stringerBoom[:, 1], marker='*', c='red')
-plt.show()
-
-# Current problems:
-# Discontinuity sector 2 near LE                                        -- solved
-# Check corner cases neighbours - expect one anomaly (end sector 3)     -- solved
-# neigbour list incorrect? (check TE // idx 0)                          -- solved
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.hlines(0, -0.6, 0.05)
+ax.vlines(-0.225/2, -0.225/2 - 0.05, 0.225/2 + 0.05)
+ax.vlines(0, -0.225/2 - 0.05, 0.225/2 + 0.05)
+ax.set_xlabel("$z$ ($m$)")
+ax.set_ylabel("$y$ ($m$)")
+ax.grid()
+ax.scatter(z, y, label="Boom")
+ax.scatter(stringerBoom[:, 0], stringerBoom[:, 1], marker='*', c='red', label="Stringer")
+ax.legend()
+fig.savefig("boom_locations.png")
+fig.show()

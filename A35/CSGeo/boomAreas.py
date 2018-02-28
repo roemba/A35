@@ -71,9 +71,9 @@ class boomAreas:
         boom = self.boomArray[index_boom]
         z = boom[0] - self.centroid_z
         y = boom[1] - self.centroid_y
-        if self.m_y == 0:
+        if int(self.m_y) == 0:
             d = y
-        elif self.m_z == 0:
+        elif int(self.m_z) == 0:
             d = z
         else:
             dist = abs((self.I_yy/self.I_zz)*y - (self.m_y/self.m_z)*z)/math.sqrt((self.m_y/self.m_z)**2. + (self.I_yy/self.I_zz)**2.)
