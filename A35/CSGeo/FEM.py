@@ -294,7 +294,7 @@ class FEM:
                             y = 0.
                         else:
                             z = radius * (np.sin(sec2Pitch) - 1.)
-                            y = radius * np.cos(sec2Pitch)
+                            y = -1. * radius * np.cos(sec2Pitch)
 
                     else:                       # Second half literally copies first half; works due to symmetry y
                         semi2Ticker += 1  # to work towards index of referenced values
@@ -390,5 +390,5 @@ class FEM:
 
 # OUTPUT -- [   z   ,   y   ,   area    ,   ... neighbours ...  ]
 
-testArray = FEM.boomPositions(5, 5, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)
+print FEM.boomPositions(5, 5, 5, 0.547, 0.225, 17, 0.015, 0.02, 0.0012)[:, :2]
 
