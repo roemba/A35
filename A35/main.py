@@ -249,6 +249,7 @@ numberOfBoomsArray = FEM.discretization(5, 5, 5, pm.chord, pm.height, pm.stiffen
 openShearFlowCrossSections = []
 closedShearFlowCrossSections = []
 displacements = []
+normalStress = []
 fig5 = plt.figure(figsize=(8, 4.8))
 for index in xrange(xtab.shape[0]):
     boomArray = boomArray3D[index][0]
@@ -286,7 +287,13 @@ for index in xrange(xtab.shape[0]):
                                                       reactionForces[2], reactionForces[3], reactionForces[4],
                                                       reactionForces[5], k1_z, k2_z,
                                                       pm.actuatorload, x)
-
+    # Normal stresses
+    maxStress, minStress, maxStressBoomIdx, minStressBoomIdx = \
+                                        shearFlowAndDeflection.maxNormalStress(boomArray, crosssections[index][0],
+                                                                            crosssections[index][1], i_yy_cs, i_zz_cs)
+    # Taken min separately, since compression has additional interesting effects..
+    # max takes abs(min) as well
+    normalStress.append([maxStress, minStress])
     displacements.append([d_y, d_z])
 
     if index == 5:
@@ -352,6 +359,18 @@ ax8.grid(b=True, which='both', color='0.65', linestyle='-')
 ax8.legend()
 ax8.set_xlabel("Span ($m$)")
 ax8.set_ylabel("Displacement ($m$)")
+fig8.show()
+
+npNormStress = np.array(normalStress)
+fig8 = plt.figure()
+ax8 = fig8.add_subplot(111)
+ax8.set_title("Maximum Normal Stress (Pa)")
+ax8.set_xlim(0, pm.span)
+ax8.plot(xtab, npNormStress[:, 0], label=r"$\sigma$")
+ax8.grid(b=True, which='both', color='0.65', linestyle='-')
+ax8.legend()
+ax8.set_xlabel("Span ($m$)")
+ax8.set_ylabel("Normal stress ($m$)")
 fig8.show()
 
 if saveFigs:

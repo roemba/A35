@@ -123,3 +123,26 @@ class shearFlowAndDeflection:
 
         deflection /= (- E * I_yy)
         return deflection
+
+    @staticmethod
+    def maxNormalStress(boomArray, M_y, M_z, I_yy, I_zz):
+        maxStress = 0.
+        minStress = 0.
+        lol = np.shape(boomArray)[0]
+        for boom in range(np.shape(boomArray)[0]):
+            z = boomArray[boom, 0]
+            y = boomArray[boom, 1]
+            stress = M_z * y / I_zz + M_y * z / I_yy
+            if abs(stress) > maxStress:
+                maxStress = abs(stress)
+                maxStressBoom = boom
+            if stress < minStress:
+                minStress = stress
+                minStressBoom = boom
+
+        if maxStress == 0.:
+            maxStressBoom = 0
+        if minStress == 0.:
+            minStressBoom = 0
+
+        return maxStress, minStress, maxStressBoom, minStressBoom
