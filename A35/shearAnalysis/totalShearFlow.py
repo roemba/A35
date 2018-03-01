@@ -33,14 +33,16 @@ class shearFlowAndDeflection:
                         if cell == 1:   # same but different direction for each cell -> take cell 1 only
                             q_s = q_bi + q_s01 - q_s02
                             totalShearArray[panelIndex] = [startBoom, endBoom, q_s]
-                    else:
+                    else:   # shear flow in skin
                         if cell == 1: q_s0 = q_s01
                         elif cell == 2: q_s0 = q_s02
                         q_s = q_bi + q_s0
                         totalShearArray[panelIndex] = [startBoom, endBoom, q_s]
 
-        max_q = np.max(totalShearArray[:, 2])
-        min_q = np.min(totalShearArray[:, 2])
+        max_q = np.max(totalShearArray[:, 2])       # max shear flow in cross section
+        idxMax = totalShearArray[np.where(max_q == totalShearArray[:, 2])[0]][0]
+        min_q = np.min(totalShearArray[:, 2])       # min shear flow in cross section
+        idxMin = totalShearArray[np.where(min_q == totalShearArray[:, 2])[0]][1]
 
-        return max_q, min_q
-
+        return max_q, min_q, idxMax, idxMax + 1, idxMin, idxMin + 1
+        #   output format: [max_q, min_q, startBoom_max_q, endBoom_max_q, startBoom_min_q, endBoom_min_q]
