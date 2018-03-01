@@ -2,14 +2,12 @@ from parameters import parameters as pm
 from beamTheory.main import beamTheory
 from Utilities.coordinateSwap import coordinateSwap
 from CSGeo.centroidLocation import Centroid
-from CSGeo.areaMomentOfInertia import areaMomentOfInertia as AMOI
 from CSGeo.boomAreas import boomAreas as ba
 from CSGeo.numericalMOI import numericalMOI
 from CSGeo.FEM import FEM
 from shearAnalysis.openSectionShearFlow import openSectionShearFlow
 from shearAnalysis.closedSectionShearFlow import closedSectionShearFlow
 from shearAnalysis.totalShearFlow import shearFlowAndDeflection
-import matplotlib as mplt
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -154,14 +152,11 @@ print "Result I_zz_cs:", i_zz_cs, "Result I_yy_cs:", i_yy_cs, "Result I_zy_cs:",
 print
 
 # ------------------------------------------------------------------------------------
-# Start final calculation of reaction forces using analytical MoI
+# Start final calculation of reaction forces using analytical MoI and shear center
 # ------------------------------------------------------------------------------------
-#Calculate all the shear forces and bending moments using analytical MoI
 i_zz_cs = 0.00001153484934
 i_yy_cs = 0.00006369185039
-#z_sc = pm.height/2.
-#z_sc = 0.26930523 #analytical solution
-z_sc = 0.1468 + pm.height/2.
+z_sc = 0.0634 + pm.height/2.
 
 reactionForces = beamTheory.staticEquilibrium(pm.youngsmodulus, i_zz_cs, pm.chord,
                                               pm.span,
@@ -172,7 +167,6 @@ reactionForces = beamTheory.staticEquilibrium(pm.youngsmodulus, i_zz_cs, pm.chor
                                               pm.verticaldisplacementhinge1, pm.maxupwarddeflection).A1
 
 crosssections = []
-#xtab = np.array([0.153, 1.141, 1.281, 1.421, 2.681]) #Reaction force locations
 for index in xrange(xtab.shape[0]):
     boomArray = boomArray3D[index][0]
     x = xtab[index]
@@ -254,6 +248,7 @@ numberOfBoomsArray = FEM.discretization(5, 5, 5, pm.chord, pm.height, pm.stiffen
 
 openShearFlowCrossSections = []
 closedShearFlowCrossSections = []
+displacements = []
 fig5 = plt.figure(figsize=(8, 4.8))
 for index in xrange(xtab.shape[0]):
     boomArray = boomArray3D[index][0]
@@ -273,6 +268,27 @@ for index in xrange(xtab.shape[0]):
 
     closedShearFlow = [q_s01, q_s02, d_theta_d_x, q_max, idmax, id2max]
     closedShearFlowCrossSections.append(closedShearFlow)
+
+    d_y = shearFlowAndDeflection.bendingDeflectionInY(pm.youngsmodulus, i_zz_cs, pm.maxupwarddeflection,
+                                                         pm.aerodynamicload, pm.xlocation1, pm.xlocation2,
+                                                         pm.xlocation3, pm.d12, reactionForces[0], reactionForces[1],
+                                                         reactionForces[2], reactionForces[3], reactionForces[4],
+                                                         reactionForces[5], reactionForces[6], reactionForces[7],
+                                                         pm.actuatorload, x)
+
+    k1_z, k2_z = shearFlowAndDeflection.integrationConstantsY(pm.youngsmodulus, i_yy_cs, pm.maxupwarddeflection,
+                                                              pm.aerodynamicload, pm.xlocation1, pm.xlocation2,
+                                                              pm.d12, reactionForces[0], reactionForces[1], reactionForces[5],
+                                                              pm.verticaldisplacementhinge1)
+
+    d_z = shearFlowAndDeflection.bendingDeflectionInZ(pm.youngsmodulus, i_yy_cs, pm.maxupwarddeflection,
+                                                      pm.aerodynamicload, pm.xlocation1, pm.xlocation2,
+                                                      pm.xlocation3, pm.d12, reactionForces[0], reactionForces[1],
+                                                      reactionForces[2], reactionForces[3], reactionForces[4],
+                                                      reactionForces[5], k1_z, k2_z,
+                                                      pm.actuatorload, x)
+
+    displacements.append([d_y, d_z])
 
     if index == 5:
         ax5 = fig5.add_subplot(111)
@@ -299,13 +315,13 @@ for index in xrange(xtab.shape[0]):
 npClosedShearFlowCrossSections = np.array(closedShearFlowCrossSections)
 fig6 = plt.figure()
 ax6 = fig6.add_subplot(111)
-ax6.set_title("Angle of twist for $n = " + str(n_of_crossections) + "$")
+ax6.set_title("Rate of twist for $n = " + str(n_of_crossections) + "$")
 ax6.set_xlim(0, pm.span)
 ax6.plot(xtab, npClosedShearFlowCrossSections[:, 2], label=r"$\frac{d\theta}{d x}_{CS}}$")
 ax6.grid(b=True, which='both', color='0.65', linestyle='-')
 ax6.legend()
 ax6.set_xlabel("Span ($m$)")
-ax6.set_ylabel(r"$\frac{d\theta}{d x}$ ($rad/m$)")
+ax6.set_ylabel(r"$\frac{d\theta}{d x}$ ($rad m^{-1}$)")
 fig6.show()
 
 fig7 = plt.figure(figsize=(8, 4.8))
@@ -326,6 +342,18 @@ ax7.legend()
 ax7.set_xlabel("Span ($m$)")
 ax7.set_ylabel("Shear flow ($Nm^{-1}$)")
 fig7.show()
+
+npDisplacements = np.array(displacements)
+fig8 = plt.figure()
+ax8 = fig8.add_subplot(111)
+ax8.set_title("Displacement")
+ax8.set_xlim(0, pm.span)
+ax8.plot(xtab, npDisplacements[:, 1], label=r"$\delta_{CS}}$")
+ax8.grid(b=True, which='both', color='0.65', linestyle='-')
+ax8.legend()
+ax8.set_xlabel("Span ($m$)")
+ax8.set_ylabel("Displacement ($m$)")
+fig8.show()
 
 if saveFigs:
     fig.savefig("boom_locations.png")
