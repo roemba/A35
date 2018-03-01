@@ -264,7 +264,7 @@ for index in xrange(xtab.shape[0]):
     q_s01, q_s02, d_theta_d_x, loopArray = closedSectionShearFlow.calculation(crosssections[index][4], pm.chord, pm.height, pm.skinthickness, pm.sparthickness,
                                                          z_sc, boomArray, openShearFlow, pm.shearmodulus)
 
-    q_max, idmax, id2max = shearFlowAndDeflection.crossSectionMaxQ(q_s01, q_s02, boomArray, openShearFlow)
+    q_max, idmax, id2max = shearFlowAndDeflection.crossSectionMaxQ(q_s01, q_s02, boomArray, openShearFlow, pm.skinthickness, pm.sparthickness)
 
     closedShearFlow = [q_s01, q_s02, d_theta_d_x, q_max, idmax, id2max]
     closedShearFlowCrossSections.append(closedShearFlow)

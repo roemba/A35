@@ -12,7 +12,7 @@ class shearFlowAndDeflection:
     panelNumber = 0.
 
     @staticmethod
-    def crossSectionMaxQ(q_s01, q_s02, boomArray, openShearArray):
+    def crossSectionMaxQ(q_s01, q_s02, boomArray, openShearArray, t_sk, t_sp):
         # This function should be called for each rib location
         # From beamTheory get: T, V_y, V_z
         # From FEM get: boomArray
@@ -29,18 +29,17 @@ class shearFlowAndDeflection:
                 cellNumber, startBoom, endBoom, q_bi, panelIndex = panel
                 if cell == cellNumber:
                     boom1 = boomArray[int(startBoom)]
-                    boomTemp = boom1[3:3 + 6:2]
                     # Part exclusively for spar; only part with multiple q_s0
                     tempBoomIndex = np.where(boom1 == int(endBoom))
                     if boom1[tempBoomIndex[0] + 1] == 'spar' and cell == 1:
                        # same but different direction for each cell -> take cell 1 only
                         q_s = q_bi + q_s01 - q_s02
-                        totalShearArray[i] = [startBoom, endBoom, q_s]
+                        totalShearArray[i] = [startBoom, endBoom, q_s / t_sp]
                     else:   # shear flow in skin
                         if cell == 1: q_s0 = q_s01
                         elif cell == 2: q_s0 = q_s02
                         q_s = q_bi + q_s0
-                        totalShearArray[i] = [startBoom, endBoom, q_s]
+                        totalShearArray[i] = [startBoom, endBoom, q_s / t_sk]
                     i += 1
 
         max_q = np.max(np.abs(totalShearArray[:, 2]))       # max shear flow in cross section
