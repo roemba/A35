@@ -271,9 +271,9 @@ for index in xrange(xtab.shape[0]):
     q_s01, q_s02, d_theta_d_x, loopArray = closedSectionShearFlow.calculation(crosssections[index][4], pm.chord, pm.height, pm.skinthickness, pm.sparthickness,
                                                          z_sc, boomArray, openShearFlow, pm.shearmodulus)
 
-    q_max, q_min = shearFlowAndDeflection.crossSectionMaxQ(q_s01, q_s02, boomArray, openShearFlow)
+    q_max, idmax, id2max = shearFlowAndDeflection.crossSectionMaxQ(q_s01, q_s02, boomArray, openShearFlow)
 
-    closedShearFlow = [q_s01, q_s02, d_theta_d_x, q_max, q_min]
+    closedShearFlow = [q_s01, q_s02, d_theta_d_x, q_max, idmax, id2max]
     closedShearFlowCrossSections.append(closedShearFlow)
 
     # T, z_sc, q_s01, q_s02, d_theta_d_x = closedSectionShearFlow.torsionUpdate(crosssections[index][4],
@@ -323,7 +323,7 @@ fig7 = plt.figure()
 ax7 = fig7.add_subplot(111)
 ax7.set_title("Maximum shear flow")
 ax7.set_xlim(0, pm.span)
-ax7.plot(xtab, npClosedShearFlowCrossSections[:, 4], label="$q_{max_{CS}}$")
+ax7.plot(xtab, npClosedShearFlowCrossSections[:, 3], label="$q_{max_{CS}}$")
 ax7.grid(b=True, which='both', color='0.65', linestyle='-')
 ax7.legend()
 ax7.set_xlabel("Span ($m$)")
