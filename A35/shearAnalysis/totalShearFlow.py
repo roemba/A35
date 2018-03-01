@@ -57,7 +57,7 @@ class shearFlowAndDeflection:
     def bendingDeflectionInY(E, I_zz, theta, aero_q, x_1, x_2, x_3, x_a, A_y, A_z, B_y, B_z, C_y, k1, k2, R_z, P, x):
         cos = np.cos(theta)
         sin = np.sin(theta)
-        div = - E * I_zz * cos
+        div = - E * I_zz
         qContribution = - aero_q * x**4 * cos
         rotatedA = A_y * cos + A_z * sin
         rotatedB = B_y * cos + B_z * sin
@@ -68,7 +68,7 @@ class shearFlowAndDeflection:
         stepx2 = (x - x_2)**3 * rotatedB / 6.
         stepx3 = (x - x_3)**3 * rotatedC / 6.
         stepa1 = (x - x_2 + x_a / 2.) * rotatedR / 6.
-        stepa2 = (x - x_2 - x_a / 2.) * rotatedP / 6.
+        stepa2 = -(x - x_2 - x_a / 2.) * rotatedP / 6.
 
         deflection = k1 * x + k2 + qContribution
         if x > x_1:
@@ -84,5 +84,8 @@ class shearFlowAndDeflection:
 
         deflection /= div
         return deflection
+
+    @staticmethod
+    def bendingDeflectionInZ(E, I_yy, theta, aero_q, x_1, x_2, x_3, x_a, A_y, A_z, B_y, B_z, C_y, R_z, P, x):
 
 
