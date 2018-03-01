@@ -276,10 +276,9 @@ for index in xrange(xtab.shape[0]):
                                                          reactionForces[5], reactionForces[6], reactionForces[7],
                                                          pm.actuatorload, x)
 
-    k1_z, k2_z = shearFlowAndDeflection.integrationConstantsY(pm.youngsmodulus, i_yy_cs, pm.maxupwarddeflection,
+    k1_z, k2_z = shearFlowAndDeflection.integrationConstantsY(pm.maxupwarddeflection,
                                                               pm.aerodynamicload, pm.xlocation1, pm.xlocation2,
-                                                              pm.d12, reactionForces[0], reactionForces[1], reactionForces[5],
-                                                              pm.verticaldisplacementhinge1)
+                                                              pm.d12, reactionForces[0], reactionForces[1], reactionForces[5])
 
     d_z = shearFlowAndDeflection.bendingDeflectionInZ(pm.youngsmodulus, i_yy_cs, pm.maxupwarddeflection,
                                                       pm.aerodynamicload, pm.xlocation1, pm.xlocation2,

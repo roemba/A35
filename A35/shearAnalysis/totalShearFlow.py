@@ -86,23 +86,15 @@ class shearFlowAndDeflection:
         return deflection
 
     @staticmethod
-    def integrationConstantsY(E, I_yy, theta, aero_q, x_1, x_2, x_a, A_y, A_z, R_z, delta1):
-        x = x_2
+    def integrationConstantsY(theta, aero_q, x_1, x_2, x_a, A_y, A_z, R_z):
         cos = np.cos(theta)
         sin = np.sin(theta)
-        qContribution = (aero_q / 24.) * (x ** 4) * sin
-        rotatedA = - A_y * sin + A_z * cos
-        rotatedR = R_z * cos
-        stepx1 = (x - x_1) ** 3 * rotatedA / 6.
-        stepa1 = (x - x_2 + x_a / 2.) ** 3 * rotatedR / 6.
 
-        deflectionAt2 = - qContribution
-        if x > x_1:
-            deflectionAt2 -= stepx1
-        if x > x_2 - x_a / 2.:
-            deflectionAt2 -= stepa1
+        deflectionAt2 = - ( (aero_q / 24.) * (x_2 ** 4) * sin ) \
+                        - ( (x_2 - x_1) ** 3 * (- A_y * sin + A_z * cos) / 6. ) \
+                        - ( (x_a / 2.) ** 3 * (R_z * cos) / 6. )
 
-        deflectionAt1 = aero_q * x_1 ** 4 * sin / 24. - E * I_yy * sin * delta1
+        deflectionAt1 = - aero_q * x_1 ** 4 * sin / 24.
 
         matrix = np.array([[x_1, 1], [x_2, 1]])
         ans = np.array([[deflectionAt1], [deflectionAt2]])
@@ -117,30 +109,18 @@ class shearFlowAndDeflection:
     def bendingDeflectionInZ(E, I_yy, theta, aero_q, x_1, x_2, x_3, x_a, A_y, A_z, B_y, B_z, C_y, R_z, k1, k2, P, x):
         cos = np.cos(theta)
         sin = np.sin(theta)
-        div = - E * I_yy
-        qContribution = aero_q * x**4 * sin / 24.
-        rotatedA = - A_y * sin + A_z * cos
-        rotatedB = - B_y * sin + B_z * cos
-        rotatedC = - C_y * sin
-        rotatedP = P * cos
-        rotatedR = R_z * cos
-        stepx1 = (x - x_1)**3 * rotatedA / 6.
-        stepx2 = (x - x_2)**3 * rotatedB / 6.
-        stepx3 = (x - x_3)**3 * rotatedC / 6.
-        stepa1 = (x - x_2 + x_a / 2.)**3 * rotatedR / 6.
-        stepa2 = -(x - x_2 - x_a / 2.)**3 * rotatedP / 6.
 
-        deflection = qContribution + k1 * x + k2
+        deflection = ( aero_q * x**4 * sin / 24. ) + k1 * x + k2
         if x > x_1:
-            deflection += stepx1
+            deflection += (x - x_1)**3 * (- A_y * sin + A_z * cos) / 6.
         if x > x_2:
-            deflection += stepx2
+            deflection += (x - x_2)**3 * (- B_y * sin + B_z * cos) / 6.
         if x > x_3:
-            deflection += stepx3
+            deflection += (x - x_3)**3 * (- C_y * sin) / 6.
         if x > x_2 - x_a / 2.:
-            deflection += stepa1
+            deflection += (x - x_2 + x_a / 2.)**3 * R_z * cos / 6.
         if x > x_2 + x_a / 2.:
-            deflection += stepa2
+            deflection -= (x - x_2 - x_a / 2.)**3 * P * cos / 6.
 
-        deflection /= div
+        deflection /= (- E * I_yy)
         return deflection
