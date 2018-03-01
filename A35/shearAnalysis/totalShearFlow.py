@@ -21,9 +21,9 @@ class shearFlowAndDeflection:
 
         # output: startBoom, endBoom, q_s
 
-        totalShearArray = np.zeros((np.shape(openShearArray)[0], 2))
+        totalShearArray = np.zeros((np.shape(openShearArray)[0], 3))
         for cell in range(1, 3):
-            for panel in range(np.shape(openShearArray)[0]):
+            for panel in openShearArray:
                 cellNumber, startBoom, endBoom, q_bi, panelIndex = panel
                 if cell == cellNumber:
                     boom1 = boomArray[int(startBoom)]
@@ -32,12 +32,12 @@ class shearFlowAndDeflection:
                     if boom1[np.where(boomTemp == int(endBoom))[0] + 1] == 'spar':
                         if cell == 1:   # same but different direction for each cell -> take cell 1 only
                             q_s = q_bi + q_s01 - q_s02
-                            totalShearArray[panelIndex] = [startBoom, endBoom, q_s]
+                            totalShearArray[int(panelIndex)] = [startBoom, endBoom, q_s]
                     else:
                         if cell == 1: q_s0 = q_s01
                         elif cell == 2: q_s0 = q_s02
                         q_s = q_bi + q_s0
-                        totalShearArray[panelIndex] = [startBoom, endBoom, q_s]
+                        totalShearArray[int(panelIndex)] = [startBoom, endBoom, q_s]
 
         max_q = np.max(totalShearArray[:, 2])
         min_q = np.min(totalShearArray[:, 2])
