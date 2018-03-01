@@ -152,7 +152,8 @@ print
 i_zz_cs = 0.00001153484934
 i_yy_cs = 0.00006369185039
 #z_sc = pm.height/2.
-z_sc = 0.26930523 #analytical solution
+#z_sc = 0.26930523 #analytical solution
+z_sc = 0.1468 + pm.height/2.
 
 reactionForces = beamTheory.staticEquilibrium(pm.youngsmodulus, i_zz_cs, pm.chord,
                                               pm.span,
@@ -163,6 +164,7 @@ reactionForces = beamTheory.staticEquilibrium(pm.youngsmodulus, i_zz_cs, pm.chor
                                               pm.verticaldisplacementhinge1, pm.maxupwarddeflection).A1
 
 crosssections = []
+#xtab = np.array([0.153, 1.141, 1.281, 1.421, 2.681]) #Reaction force locations
 for index in xrange(xtab.shape[0]):
     boomArray = boomArray3D[index][0]
     x = xtab[index]
@@ -250,15 +252,33 @@ numberOfBoomsArray = FEM.discretization(5, 5, 5, pm.chord, pm.height, pm.stiffen
 print int(numberOfBoomsArray[0][0]), int(numberOfBoomsArray[1][0]), int(numberOfBoomsArray[3][0])
 
 openShearFlowCrossSections = []
+closedShearFlowCrossSections = []
+angleOfTwists = []
 for index in xrange(xtab.shape[0]):
     boomArray = boomArray3D[index][0]
     x = xtab[index]
 
     openShearFlow = openSectionShearFlow.totOpenCalc(i_zz_cs, i_yy_cs, 0., crosssections[index][3], crosssections[index][2],
-                                             boomArray, int(numberOfBoomsArray[0][0]), int(numberOfBoomsArray[1][0]),
-                                             int(numberOfBoomsArray[3][0]))
+                                                     boomArray, int(numberOfBoomsArray[0][0]), int(numberOfBoomsArray[1][0]),
+                                                     int(numberOfBoomsArray[3][0]))
 
     openShearFlowCrossSections.append(openShearFlow)
+
+
+    q_s01, q_s02, d_theta_d_x, loopArray = closedShearFlow = closedSectionShearFlow.calculation(crosssections[index][4], pm.chord, pm.height, pm.skinthickness, pm.sparthickness,
+                                                         z_sc, boomArray, openShearFlow, pm.shearmodulus)
+
+    closedShearFlowCrossSections.append(closedShearFlow)
+
+    # T, z_sc, q_s01, q_s02, d_theta_d_x = closedSectionShearFlow.torsionUpdate(crosssections[index][4],
+    #                                      crosssections[index][2], pm.chord, pm.height,
+    #                                      pm.skinthickness, pm.sparthickness, pm.shearmodulus, z_sc, boomArray,
+    #                                      openShearFlow, pm.aerodynamicload, pm.actuatorload, reactionForces[0],
+    #                                      reactionForces[1], reactionForces[2], reactionForces[3], reactionForces[4],
+    #                                      reactionForces[5], pm.maxupwarddeflection, pm.xlocation3, pm.xlocation2,
+    #                                      pm.xlocation1, pm.d12, x)
+
+    angleOfTwists.append(d_theta_d_x)
 
     if index == 5:
         fig5 = plt.figure(figsize=(8, 4.8))
@@ -279,12 +299,17 @@ for index in xrange(xtab.shape[0]):
             startBoom = boomArray[startBoomIndex]
             endBoomIndex = int(shearArray[2])
             endBoom = boomArray[endBoomIndex]
-            openShearFlow = shearArray[3]
             ax5.plot([startBoom[0], endBoom[0]], [startBoom[1], endBoom[1]])
 
         fig5.show()
 
-    closedSectionShearFlow.calculation(crosssections[index][2], pm.chord, pm.height, pm.skinthickness, pm.sparthickness,
-                                       z_sc, boomArray, openShearFlow)
-
-print openShearFlowCrossSections[5]
+fig6 = plt.figure()
+ax6 = fig6.add_subplot(111)
+ax6.set_title("Angle of twist for $n = " + str(n_of_crossections) + "$")
+ax6.set_xlim(0, pm.span)
+ax6.plot(xtab, angleOfTwists, label="$theta_{CS}$")
+ax6.grid(b=True, which='both', color='0.65', linestyle='-')
+ax6.legend()
+ax6.set_xlabel("Span ($m$)")
+ax6.set_ylabel("Theta ($rad$)")
+fig6.show()

@@ -14,21 +14,26 @@ class closedSectionShearFlow:
     def perpDistShearCenter(z1, y1, z2, y2, z_sc):
         den = np.sqrt((y1 - y2) ** 2 + (z1 - z2) ** 2)
         if z1 == z2:
-            p = z1 - z_sc
+            p = abs(z1 - z_sc)
+        elif y1 == y2:
+            p = abs(y1)
         else:
-            num = (z1 + (z1 - z2) / 2. - z_sc) * (y1 - y2) / (z1 - z2)
-            num += y1 + (y1 - y2) / 2.
-            p = num / den
+            gradient = (y1 - y2) / (z1 - z2)
+            c1 = y1 - gradient*z1
+            c2 = z_sc/gradient
+            z_perp = (c2-c1)/(gradient + 1/gradient)
+            y_perp = -(1/gradient)*z_perp + c2
+            p = np.sqrt((z_perp - z_sc)**2. + y_perp**2.)
 
         l = den
         return p, l
 
 
     @staticmethod
-    def calculation(V_y, C_a, h, t_sk, t_sp, z_sc, boomArray, openShearArray):
+    def calculation(T, C_a, h, t_sk, t_sp, z_sc, boomArray, openShearArray, G):
 
         # Areas of cells
-        A1 = np.pi * h / 2.
+        A1 = np.pi * h**2 / 8.
         A2 = (C_a - h / 2.) * h / 2.
 
         # loopArray structure:
@@ -60,7 +65,9 @@ class closedSectionShearFlow:
                     # Find index of connection and get t based upon string
                     # First prevent mistakes if boom[:3] could
                     boomTemp = boom1[3:3+6:2]
-                    if boom1[np.where(boomArray == endBoom)[0] + 1] == 'spar':
+                    if boom1[np.where(boom1 == int(endBoom))[0] + 1] == 'spar':
+                        if cell == 1 and p > h/2.:
+                            p *= -1.
                         t = t_sp
                         l_t_spar += l / t
                         p_l_q_spar += p * l * q_b
@@ -71,29 +78,31 @@ class closedSectionShearFlow:
                     q_bi += q_b * l / t
                     p_l_q += p * l * q_b
 
-            loopArray[cell - 1] = [l_t, l_t_spar, q_bi, p_l_q, p_l_q_spar]
+            loopArray[cell - 1] = [cell, l_t, l_t_spar, q_bi, p_l_q, p_l_q_spar]
 
         # 3x3 matrix for finding qs01, qs02, d(theta)/dx
-        matrix = np.array([[loopArray[0, 1],    -loopArray[0, 2],   -A1 ],
-                           [-loopArray[1, 2],   loopArray[1, 1],    -A2 ],
-                           [2 * A1,             2 * A2,             0   ]])
+        matrix = np.array([[loopArray[0, 1],    -loopArray[0, 2],   -A1*2.*G],
+                           [-loopArray[1, 2],   loopArray[1, 1],    -A2*2.*G ],
+                           [2. * A1,             2. * A2,             0.   ]])
         ans = np.array([[-loopArray[0, 3]],
                         [-loopArray[1, 3]],
-                        [-loopArray[1, 4] + loopArray[0, 5] - V_y * z_sc]])
+                        [-loopArray[1, 4] + loopArray[0, 5] + T]])
 
         q_s01, q_s02, d_theta_d_x = np.linalg.solve(matrix, ans)
-        return q_s01, q_s02, d_theta_d_x, loopArray
+        return q_s01[0], q_s02[0], d_theta_d_x[0], loopArray
 
 
     # Idea behind torsionUpdate: run loop to find convergent value for Torsion and shear center
     # Might need to make this a for loop for a set amount of iterations to see what happens..
     @staticmethod
     def torsionUpdate(T0, V_y, C_a, h, t_sk, t_sp, G, z_sc, boomArray, openShearArray,
-                      q, P, R_z, A_z, A_y, B_z, B_y, C_y, theta, x_3, x_2, x_1, x_a, x):
+                      q, P, A_y, A_z, B_y, B_z, C_y, R_z, theta, x_3, x_2, x_1, x_a, x):
+        if T0 == 0.:
+            T0 = 0.000000001
         run = True
         while run:
             q_s01, q_s02, d_theta_d_x, loopArray = closedSectionShearFlow.calculation\
-                                                            (V_y, C_a, h, t_sk, t_sp, z_sc, boomArray, openShearArray)
+                                                            (V_y, C_a, h, t_sk, t_sp, z_sc, boomArray, openShearArray, G)
 
             A1 = np.pi * h / 2.
             A2 = (C_a - h / 2.) * h / 2.
@@ -107,7 +116,7 @@ class closedSectionShearFlow:
             z_sc = - V_y * 4 * G * d_theta_d_x * (cellFactor1 + cellFactor2)
 
             T = bm.calculateTorqueForX(q, P, R_z, A_z, A_y, B_z, B_y, C_y, C_a, h, theta, x_3, x_2, x_1, x_a, z_sc, x)
-            if abs(T0 - T) / T < 0.01:
+            if abs((T/T0)*100. - 100.) > 1.:
                 run = False
             else:
                 T0 = T

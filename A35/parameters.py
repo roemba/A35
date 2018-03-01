@@ -20,3 +20,4 @@ class parameters:
     actuatorload = 9.17e3 #Actuator_load	P	9.17	kN
     aerodynamicload = 4.53e3 #Aerodynamic_load	q	4.53	kN/m
     youngsmodulus = 73.1e9 #Youngs modulus E 73.1 GPa
+    shearmodulus = 28e9 #Shear modulus G 28 GPa
