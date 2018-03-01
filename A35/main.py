@@ -68,7 +68,11 @@ centroid_y = 0.
 i_zz_cs, i_yy_cs, i_zy_cs = numericalMOI.getMOI(centroid_z, centroid_y, initial2DBoomArray)
 
 n_of_crossections = 500
+riblocations = [pm.xlocation1, pm.xlocation2 - (pm.d12 / 2.), pm.xlocation2 + (pm.d12 / 2.), pm.xlocation3]
+
 xtab = np.linspace(0., pm.span, num=n_of_crossections)
+xtab = np.concatenate((xtab, riblocations))
+xtab = np.sort(xtab)
 
 boomArray3D = []
 for x in xtab:
@@ -155,9 +159,9 @@ print
 #Calculate all the shear forces and bending moments using analytical MoI
 i_zz_cs = 0.00001153484934
 i_yy_cs = 0.00006369185039
-z_sc = pm.height/2.
+#z_sc = pm.height/2.
 #z_sc = 0.26930523 #analytical solution
-#z_sc = 0.1468 + pm.height/2.
+z_sc = 0.1468 + pm.height/2.
 
 reactionForces = beamTheory.staticEquilibrium(pm.youngsmodulus, i_zz_cs, pm.chord,
                                               pm.span,
@@ -242,21 +246,15 @@ ax4.set_xlabel("Span ($m$)")
 ax4.set_ylabel("Torque ($Nm$)")
 fig4.show()
 
-if saveFigs:
-    fig.savefig("boom_locations.png")
-    fig2.savefig("bending_moments.png")
-    fig3.savefig("shear_forces.png")
-    fig4.savefig("torque.png")
-
 # ------------------------------------------------------------------------------------
 # Start calculating shear flows
 # ------------------------------------------------------------------------------------
 
 numberOfBoomsArray = FEM.discretization(5, 5, 5, pm.chord, pm.height, pm.stiffenernumber)
-print int(numberOfBoomsArray[0][0]), int(numberOfBoomsArray[1][0]), int(numberOfBoomsArray[3][0])
 
 openShearFlowCrossSections = []
 closedShearFlowCrossSections = []
+fig5 = plt.figure(figsize=(8, 4.8))
 for index in xrange(xtab.shape[0]):
     boomArray = boomArray3D[index][0]
     x = xtab[index]
@@ -276,16 +274,7 @@ for index in xrange(xtab.shape[0]):
     closedShearFlow = [q_s01, q_s02, d_theta_d_x, q_max, idmax, id2max]
     closedShearFlowCrossSections.append(closedShearFlow)
 
-    # T, z_sc, q_s01, q_s02, d_theta_d_x = closedSectionShearFlow.torsionUpdate(crosssections[index][4],
-    #                                      crosssections[index][2], pm.chord, pm.height,
-    #                                      pm.skinthickness, pm.sparthickness, pm.shearmodulus, z_sc, boomArray,
-    #                                      openShearFlow, pm.aerodynamicload, pm.actuatorload, reactionForces[0],
-    #                                      reactionForces[1], reactionForces[2], reactionForces[3], reactionForces[4],
-    #                                      reactionForces[5], pm.maxupwarddeflection, pm.xlocation3, pm.xlocation2,
-    #                                      pm.xlocation1, pm.d12, x)
-
     if index == 5:
-        fig5 = plt.figure(figsize=(8, 4.8))
         ax5 = fig5.add_subplot(111)
         ax5.hlines(0, -0.6, 0.05)
         ax5.vlines(-0.225/2, -0.225/2 - 0.05, 0.225/2 + 0.05)
@@ -312,17 +301,25 @@ fig6 = plt.figure()
 ax6 = fig6.add_subplot(111)
 ax6.set_title("Angle of twist for $n = " + str(n_of_crossections) + "$")
 ax6.set_xlim(0, pm.span)
-ax6.plot(xtab, npClosedShearFlowCrossSections[:, 2], label="$theta_{CS}$")
+ax6.plot(xtab, npClosedShearFlowCrossSections[:, 2], label=r"$\frac{d\theta}{d x}_{CS}}$")
 ax6.grid(b=True, which='both', color='0.65', linestyle='-')
 ax6.legend()
 ax6.set_xlabel("Span ($m$)")
-ax6.set_ylabel("Theta ($rad$)")
+ax6.set_ylabel(r"$\frac{d\theta}{d x}$ ($rad/m$)")
 fig6.show()
 
-fig7 = plt.figure()
+fig7 = plt.figure(figsize=(8, 4.8))
 ax7 = fig7.add_subplot(111)
 ax7.set_title("Maximum shear flow")
 ax7.set_xlim(0, pm.span)
+for index in xrange(len(riblocations)):
+    lb = ""
+    if index == 0:
+        lb = "Rib 1-4"
+    riblocation = riblocations[index]
+    ax7.vlines(riblocation, 0, np.max(npClosedShearFlowCrossSections[:, 3]), label=lb, linestyles="dashed")
+    xtab_index = np.where(xtab == riblocation)[0]
+    ax7.annotate(round(float(npClosedShearFlowCrossSections[xtab_index, 3]), 2), (riblocation, npClosedShearFlowCrossSections[xtab_index, 3] + 3000.))
 ax7.plot(xtab, npClosedShearFlowCrossSections[:, 3], label="$q_{max_{CS}}$")
 ax7.grid(b=True, which='both', color='0.65', linestyle='-')
 ax7.legend()
@@ -330,4 +327,11 @@ ax7.set_xlabel("Span ($m$)")
 ax7.set_ylabel("Shear flow ($Nm^{-1}$)")
 fig7.show()
 
-riblocations = [pm.xlocation1, pm.xlocation2 - (pm.d12/2.), pm.xlocation2 + (pm.d12/2.), pm.xlocation3]
+if saveFigs:
+    fig.savefig("boom_locations.png")
+    fig2.savefig("bending_moments.png")
+    fig3.savefig("shear_forces.png")
+    fig4.savefig("torque.png")
+    fig5.savefig("panel_connections.png")
+    fig6.savefig("rate_of_twist.png")
+    fig7.savefig("q_max.png")
