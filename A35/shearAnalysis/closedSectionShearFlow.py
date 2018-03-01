@@ -60,7 +60,7 @@ class closedSectionShearFlow:
                     # Find index of connection and get t based upon string
                     # First prevent mistakes if boom[:3] could
                     boomTemp = boom1[3:3+6:2]
-                    if boom1[boomTemp.where(endBoom)[0] + 1] == 'spar':
+                    if boom1[np.where(boomArray == endBoom)[0] + 1] == 'spar':
                         t = t_sp
                         l_t_spar += l / t
                         p_l_q_spar += p * l * q_b
