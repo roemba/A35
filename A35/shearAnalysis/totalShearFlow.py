@@ -67,8 +67,8 @@ class shearFlowAndDeflection:
         stepx1 = (x - x_1)**3 * rotatedA / 6.
         stepx2 = (x - x_2)**3 * rotatedB / 6.
         stepx3 = (x - x_3)**3 * rotatedC / 6.
-        stepa1 = (x - x_2 + x_a / 2.) * rotatedR / 6.
-        stepa2 = -(x - x_2 - x_a / 2.) * rotatedP / 6.
+        stepa1 = (x - x_2 + x_a / 2.)**3 * rotatedR / 6.
+        stepa2 = -(x - x_2 - x_a / 2.)**3 * rotatedP / 6.
 
         deflection = k1 * x + k2 + qContribution
         if x > x_1:
