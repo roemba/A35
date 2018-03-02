@@ -23,7 +23,7 @@ class shearFlowAndDeflection:
 
         i = 0
 
-        totalShearArray = np.zeros((np.shape(openShearArray)[0], 3))
+        totalShearArray = np.zeros((np.shape(openShearArray)[0], 4))
         for cell in range(1, 3):
             for panel in openShearArray:
                 cellNumber, startBoom, endBoom, q_bi, panelIndex = panel
@@ -34,21 +34,27 @@ class shearFlowAndDeflection:
                     if boom1[tempBoomIndex[0] + 1] == 'spar' and cell == 1:
                        # same but different direction for each cell -> take cell 1 only
                         q_s = q_bi + q_s01 - q_s02
-                        totalShearArray[i] = [startBoom, endBoom, q_s / t_sp]
+                        totalShearArray[i] = [startBoom, endBoom, q_s, q_s / t_sp]
                     else:   # shear flow in skin
                         if cell == 1: q_s0 = q_s01
                         elif cell == 2: q_s0 = q_s02
                         q_s = q_bi + q_s0
-                        totalShearArray[i] = [startBoom, endBoom, q_s / t_sk]
+                        totalShearArray[i] = [startBoom, endBoom, q_s, q_s / t_sk]
                     i += 1
 
         max_q = np.max(np.abs(totalShearArray[:, 2]))       # max shear flow in cross section
         max_q_index = np.where(max_q == np.abs(totalShearArray[:, 2]))
         abc = totalShearArray[max_q_index[0]]
-        idxMax = abc[0, 0]
-        idx2Max = abc[0, 1]
+        idxQMax = abc[0, 0]
+        idx2QMax = abc[0, 1]
 
-        return max_q, idxMax, idx2Max
+        max_shear_stress = np.max(np.abs(totalShearArray[:, 3]))       # max shear flow in cross section
+        max_shear_stress_index = np.where(max_shear_stress == np.abs(totalShearArray[:, 3]))
+        abc = totalShearArray[max_shear_stress_index[0]]
+        idxStressMax = abc[0, 0]
+        idx2StressMax = abc[0, 1]
+
+        return max_q, idxQMax, idx2QMax, max_shear_stress, idxStressMax, idx2StressMax
         #   output format: [max_q, min_q, startBoom_max_q, endBoom_max_q, startBoom_min_q, endBoom_min_q]
 
 
@@ -128,7 +134,6 @@ class shearFlowAndDeflection:
     def maxNormalStress(boomArray, M_y, M_z, I_yy, I_zz):
         maxStress = 0.
         minStress = 0.
-        lol = np.shape(boomArray)[0]
         for boom in range(np.shape(boomArray)[0]):
             z = boomArray[boom, 0]
             y = boomArray[boom, 1]
@@ -146,3 +151,11 @@ class shearFlowAndDeflection:
             minStressBoom = 0
 
         return maxStress, minStress, maxStressBoom, minStressBoom
+
+
+    @staticmethod
+    def rotatePoint(theta, x0, y0):
+        x = x0 * np.cos(theta) - y0 * np.sin(theta)
+        y = y0 * np.cos(theta) + x0 * np.sin(theta)
+
+        return x, y

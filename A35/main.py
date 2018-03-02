@@ -265,9 +265,9 @@ for index in xrange(xtab.shape[0]):
     q_s01, q_s02, d_theta_d_x, loopArray = closedSectionShearFlow.calculation(crosssections[index][4], pm.chord, pm.height, pm.skinthickness, pm.sparthickness,
                                                          z_sc, boomArray, openShearFlow, pm.shearmodulus)
 
-    q_max, idmax, id2max = shearFlowAndDeflection.crossSectionMaxQ(q_s01, q_s02, boomArray, openShearFlow, pm.skinthickness, pm.sparthickness)
+    q_max, idqmax, id2qmax, max_shear_stress, idxstressMax, idx2stressMax = shearFlowAndDeflection.crossSectionMaxQ(q_s01, q_s02, boomArray, openShearFlow, pm.skinthickness, pm.sparthickness)
 
-    closedShearFlow = [q_s01, q_s02, d_theta_d_x, q_max, idmax, id2max]
+    closedShearFlow = [q_s01, q_s02, d_theta_d_x, q_max, idqmax, id2qmax, max_shear_stress, idxstressMax, idx2stressMax]
     closedShearFlowCrossSections.append(closedShearFlow)
 
     d_y = shearFlowAndDeflection.bendingDeflectionInY(pm.youngsmodulus, i_zz_cs, pm.maxupwarddeflection,
@@ -341,7 +341,7 @@ for index in xrange(len(riblocations)):
     riblocation = riblocations[index]
     ax7.vlines(riblocation, 0, np.max(npClosedShearFlowCrossSections[:, 3]), label=lb, linestyles="dashed")
     xtab_index = np.where(xtab == riblocation)[0]
-    ax7.annotate(round(float(npClosedShearFlowCrossSections[xtab_index, 3]), 2), (riblocation, npClosedShearFlowCrossSections[xtab_index, 3] + 3000.))
+    ax7.annotate('%.2e' % round(float(npClosedShearFlowCrossSections[xtab_index, 3]), 2), (riblocation, npClosedShearFlowCrossSections[xtab_index, 3] + 3000.))
 ax7.plot(xtab, npClosedShearFlowCrossSections[:, 3], label="$q_{max_{CS}}$")
 ax7.grid(b=True, which='both', color='0.65', linestyle='-')
 ax7.legend()
@@ -349,12 +349,31 @@ ax7.set_xlabel("Span ($m$)")
 ax7.set_ylabel("Shear flow ($Nm^{-1}$)")
 fig7.show()
 
+fig12 = plt.figure(figsize=(8, 4.8))
+ax12 = fig12.add_subplot(111)
+ax12.set_title("Maximum shear stress")
+ax12.set_xlim(0, pm.span)
+for index in xrange(len(riblocations)):
+    lb = ""
+    if index == 0:
+        lb = "Rib 1-4"
+    riblocation = riblocations[index]
+    ax12.vlines(riblocation, 0, np.max(npClosedShearFlowCrossSections[:, 6]), label=lb, linestyles="dashed")
+    xtab_index = np.where(xtab == riblocation)[0]
+    ax12.annotate('%.2e' % round(float(npClosedShearFlowCrossSections[xtab_index, 6]), 2), (riblocation, npClosedShearFlowCrossSections[xtab_index, 6] + 3000.))
+ax12.plot(xtab, npClosedShearFlowCrossSections[:, 6], label=r"$\tau_{max_{CS}}$")
+ax12.grid(b=True, which='both', color='0.65', linestyle='-')
+ax12.legend()
+ax12.set_xlabel("Span ($m$)")
+ax12.set_ylabel("Shear stress ($Pa$)")
+fig12.show()
+
 npDisplacements = np.array(displacements)
 fig8 = plt.figure()
 ax8 = fig8.add_subplot(111)
 ax8.set_title("Displacement")
 ax8.set_xlim(0, pm.span)
-ax8.plot(xtab, npDisplacements[:, 1], label=r"$\delta_{CS}}$")
+ax8.plot(xtab, npDisplacements[:, 0], label=r"$\delta_{CS}}$")
 ax8.grid(b=True, which='both', color='0.65', linestyle='-')
 ax8.legend()
 ax8.set_xlabel("Span ($m$)")
@@ -362,16 +381,53 @@ ax8.set_ylabel("Displacement ($m$)")
 fig8.show()
 
 npNormStress = np.array(normalStress)
-fig8 = plt.figure()
-ax8 = fig8.add_subplot(111)
-ax8.set_title("Maximum Normal Stress (Pa)")
-ax8.set_xlim(0, pm.span)
-ax8.plot(xtab, npNormStress[:, 0], label=r"$\sigma$")
-ax8.grid(b=True, which='both', color='0.65', linestyle='-')
-ax8.legend()
-ax8.set_xlabel("Span ($m$)")
-ax8.set_ylabel("Normal stress ($m$)")
-fig8.show()
+fig10 = plt.figure()
+ax10 = fig10.add_subplot(111)
+ax10.set_title("Maximum Normal Stress")
+ax10.set_xlim(0, pm.span)
+ax10.plot(xtab, npNormStress[:, 0], label=r"$\sigma_{n_{CS}}$")
+ax10.grid(b=True, which='both', color='0.65', linestyle='-')
+ax10.legend()
+ax10.set_xlabel("Span ($m$)")
+ax10.set_ylabel("Normal stress ($Pa$)")
+fig10.show()
+
+actuator1Index = np.where(xtab == (pm.xlocation2 - pm.d12/2.))[0][0]
+LE_x0, LE_y0 = shearFlowAndDeflection.rotatePoint(-pm.maxupwarddeflection, pm.height/2., 0.)
+LE_coordinates_backwards = []
+for index in xrange(actuator1Index, 0, -1):
+    x0 = xtab[index]
+    x1 = xtab[index - 1]
+    d_theta_d_x0 = closedShearFlowCrossSections[index][2]
+    theta_1 = abs(x1-x0)*d_theta_d_x0
+
+    LE_x0, LE_y0 = shearFlowAndDeflection.rotatePoint(-(theta_1), LE_x0, LE_y0)
+    LE_coordinates_backwards.append([x0, LE_x0, LE_y0])
+
+LE_x0, LE_y0 = shearFlowAndDeflection.rotatePoint(-pm.maxupwarddeflection, pm.height/2., 0.)
+LE_coordinates_forwards = []
+for index in xrange(actuator1Index, xtab.shape[0] - 1, 1):
+    x0 = xtab[index]
+    x1 = xtab[index + 1]
+    d_theta_d_x0 = closedShearFlowCrossSections[index][2]
+    theta_1 = abs(x1-x0)*d_theta_d_x0
+
+    LE_x0, LE_y0 = shearFlowAndDeflection.rotatePoint(-(theta_1), LE_x0, LE_y0)
+    LE_coordinates_forwards.append([x0, LE_x0, LE_y0])
+
+npLE_coordinates_forwards = np.array(LE_coordinates_forwards)
+npLE_coordinates_backwards = np.array(LE_coordinates_backwards)
+fig9 = plt.figure()
+ax9 = fig9.add_subplot(111)
+ax9.set_title("LE Displacement with reference to the undeflected hinge line")
+ax9.set_xlim(0, pm.span)
+ax9.plot(npLE_coordinates_forwards[:, 0], npLE_coordinates_forwards[:, 2], label=r"Deflection $\delta$")
+ax9.plot(npLE_coordinates_backwards[:, 0], npLE_coordinates_backwards[:, 2])
+ax9.grid(b=True, which='both', color='0.65', linestyle='-')
+ax9.legend()
+ax9.set_xlabel("Span ($m$)")
+ax9.set_ylabel("Displacement ($m$)")
+fig9.show()
 
 if saveFigs:
     fig.savefig("boom_locations.png")
@@ -381,3 +437,7 @@ if saveFigs:
     fig5.savefig("panel_connections.png")
     fig6.savefig("rate_of_twist.png")
     fig7.savefig("q_max.png")
+    fig8.savefig("y_displacement_cs.png")
+    fig9.savefig("LE_displacement.png")
+    fig10.savefig("Max_normal_stress.png")
+    fig12.savefig("Max_shear_stress.png")
