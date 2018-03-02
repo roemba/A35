@@ -394,7 +394,8 @@ fig10.show()
 
 actuator1Index = np.where(xtab == (pm.xlocation2 - pm.d12/2.))[0][0]
 LE_x0, LE_y0 = shearFlowAndDeflection.rotatePoint(-pm.maxupwarddeflection, pm.height/2., 0.)
-LE_coordinates_backwards = []
+TE_x0, TE_y0 = shearFlowAndDeflection.rotatePoint(-pm.maxupwarddeflection, pm.height/2. - pm.chord, 0.)
+coordinates_backwards = []
 for index in xrange(actuator1Index, 0, -1):
     x0 = xtab[index]
     x1 = xtab[index - 1]
@@ -402,10 +403,12 @@ for index in xrange(actuator1Index, 0, -1):
     theta_1 = abs(x1-x0)*d_theta_d_x0
 
     LE_x0, LE_y0 = shearFlowAndDeflection.rotatePoint(-(theta_1), LE_x0, LE_y0)
-    LE_coordinates_backwards.append([x0, LE_x0, LE_y0])
+    TE_x0, TE_y0 = shearFlowAndDeflection.rotatePoint(-(theta_1), TE_x0, TE_y0)
+    coordinates_backwards.append([x0, LE_x0, LE_y0, TE_x0, TE_y0])
 
 LE_x0, LE_y0 = shearFlowAndDeflection.rotatePoint(-pm.maxupwarddeflection, pm.height/2., 0.)
-LE_coordinates_forwards = []
+TE_x0, TE_y0 = shearFlowAndDeflection.rotatePoint(-pm.maxupwarddeflection, pm.height/2. - pm.chord, 0.)
+coordinates_forwards = []
 for index in xrange(actuator1Index, xtab.shape[0] - 1, 1):
     x0 = xtab[index]
     x1 = xtab[index + 1]
@@ -413,21 +416,40 @@ for index in xrange(actuator1Index, xtab.shape[0] - 1, 1):
     theta_1 = abs(x1-x0)*d_theta_d_x0
 
     LE_x0, LE_y0 = shearFlowAndDeflection.rotatePoint(-(theta_1), LE_x0, LE_y0)
-    LE_coordinates_forwards.append([x0, LE_x0, LE_y0])
+    TE_x0, TE_y0 = shearFlowAndDeflection.rotatePoint(-(theta_1), TE_x0, TE_y0)
+    coordinates_forwards.append([x0, LE_x0, LE_y0, TE_x0, TE_y0])
 
-npLE_coordinates_forwards = np.array(LE_coordinates_forwards)
-npLE_coordinates_backwards = np.array(LE_coordinates_backwards)
+npCoordinates_forwards = np.array(coordinates_forwards)
+npCoordinates_backwards = np.array(coordinates_backwards)
 fig9 = plt.figure()
 ax9 = fig9.add_subplot(111)
-ax9.set_title("LE Displacement with reference to the undeflected hinge line")
+ax9.set_title("LE and TE Displacement in $y$ with reference to the undeflected hinge line")
 ax9.set_xlim(0, pm.span)
-ax9.plot(npLE_coordinates_forwards[:, 0], npLE_coordinates_forwards[:, 2], label=r"Deflection $\delta$")
-ax9.plot(npLE_coordinates_backwards[:, 0], npLE_coordinates_backwards[:, 2])
+ax9.vlines(pm.xlocation2 - pm.d12/2., -0.10, 0.30, linestyles="dashed", label="Actuator 1")
+ax9.plot(npCoordinates_forwards[:, 0], npCoordinates_forwards[:, 2], label=r"LE Deflection $\delta_{LE_{AP}}$", color="b")
+ax9.plot(npCoordinates_backwards[:, 0], npCoordinates_backwards[:, 2], color="b")
+ax9.plot(npCoordinates_forwards[:, 0], npCoordinates_forwards[:, 4], label=r"TE Deflection $\delta_{TE_{AP}}$", color="r")
+ax9.plot(npCoordinates_backwards[:, 0], npCoordinates_backwards[:, 4], color="r")
 ax9.grid(b=True, which='both', color='0.65', linestyle='-')
 ax9.legend()
 ax9.set_xlabel("Span ($m$)")
 ax9.set_ylabel("Displacement ($m$)")
 fig9.show()
+
+fig11 = plt.figure()
+ax11 = fig11.add_subplot(111)
+ax11.set_title("LE and TE Displacement in $z$ with reference to the undeflected hinge line")
+ax11.set_xlim(0, pm.span)
+ax11.vlines(pm.xlocation2 - pm.d12/2., -0.5, 0.30, linestyles="dashed", label="Actuator 1")
+ax11.plot(npCoordinates_forwards[:, 0], npCoordinates_forwards[:, 1], label=r"LE Deflection $\delta_{LE_{AP}}$", color="b")
+ax11.plot(npCoordinates_backwards[:, 0], npCoordinates_backwards[:, 1], color="b")
+ax11.plot(npCoordinates_forwards[:, 0], npCoordinates_forwards[:, 3], label=r"TE Deflection $\delta_{TE_{AP}}$", color="r")
+ax11.plot(npCoordinates_backwards[:, 0], npCoordinates_backwards[:, 3], color="r")
+ax11.grid(b=True, which='both', color='0.65', linestyle='-')
+ax11.legend()
+ax11.set_xlabel("Span ($m$)")
+ax11.set_ylabel("Displacement ($m$)")
+fig11.show()
 
 if saveFigs:
     fig.savefig("boom_locations.png")
