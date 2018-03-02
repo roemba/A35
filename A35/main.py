@@ -394,43 +394,45 @@ ax10.set_ylabel("Normal stress ($Pa$)")
 fig10.show()
 
 actuator1Index = np.where(xtab == (pm.xlocation2 - pm.d12/2.))[0][0]
-LE_x0, LE_y0 = shearFlowAndDeflection.rotatePoint(-pm.maxupwarddeflection, pm.height/2., 0.)
-TE_x0, TE_y0 = shearFlowAndDeflection.rotatePoint(-pm.maxupwarddeflection, pm.height/2. - pm.chord, 0.)
-coordinates_backwards = []
-for index in xrange(actuator1Index, 0, -1):
-    x0 = xtab[index]
-    x1 = xtab[index - 1]
-    d_theta_d_x0 = closedShearFlowCrossSections[index][2]
-    theta_1 = abs(x1-x0)*d_theta_d_x0
-
-    LE_x0, LE_y0 = shearFlowAndDeflection.rotatePoint(-(theta_1), LE_x0, LE_y0)
-    TE_x0, TE_y0 = shearFlowAndDeflection.rotatePoint(-(theta_1), TE_x0, TE_y0)
-    coordinates_backwards.append([x0, LE_x0, LE_y0, TE_x0, TE_y0])
+# LE_x0, LE_y0 = shearFlowAndDeflection.rotatePoint(-pm.maxupwarddeflection, pm.height/2., 0.)
+# TE_x0, TE_y0 = shearFlowAndDeflection.rotatePoint(-pm.maxupwarddeflection, pm.height/2. - pm.chord, 0.)
+# coordinates_backwards = []
+# for index in xrange(actuator1Index, 0, -1):
+#     x0 = xtab[index]
+#     d_y = displacements[index][0]
+#     x1 = xtab[index - 1]
+#     d_theta_d_x0 = closedShearFlowCrossSections[index][2]
+#     theta_1 = abs(x1-x0)*d_theta_d_x0
+#
+#     LE_x0, LE_y0 = shearFlowAndDeflection.rotatePoint(-(theta_1), LE_x0, LE_y0)
+#     TE_x0, TE_y0 = shearFlowAndDeflection.rotatePoint(-(theta_1), TE_x0, TE_y0)
+#     coordinates_backwards.append([x0, LE_x0, LE_y0+d_y, TE_x0, TE_y0+d_y])
 
 LE_x0, LE_y0 = shearFlowAndDeflection.rotatePoint(-pm.maxupwarddeflection, pm.height/2., 0.)
 TE_x0, TE_y0 = shearFlowAndDeflection.rotatePoint(-pm.maxupwarddeflection, pm.height/2. - pm.chord, 0.)
 coordinates_forwards = []
-for index in xrange(actuator1Index, xtab.shape[0] - 1, 1):
+for index in xrange(0, xtab.shape[0] - 1, 1):
     x0 = xtab[index]
+    d_y = displacements[index][0]
     x1 = xtab[index + 1]
     d_theta_d_x0 = closedShearFlowCrossSections[index][2]
     theta_1 = abs(x1-x0)*d_theta_d_x0
 
     LE_x0, LE_y0 = shearFlowAndDeflection.rotatePoint(-(theta_1), LE_x0, LE_y0)
     TE_x0, TE_y0 = shearFlowAndDeflection.rotatePoint(-(theta_1), TE_x0, TE_y0)
-    coordinates_forwards.append([x0, LE_x0, LE_y0, TE_x0, TE_y0])
+    coordinates_forwards.append([x0, LE_x0, LE_y0+d_y, TE_x0, TE_y0+d_y])
 
 npCoordinates_forwards = np.array(coordinates_forwards)
-npCoordinates_backwards = np.array(coordinates_backwards)
+# npCoordinates_backwards = np.array(coordinates_backwards)
 fig9 = plt.figure()
 ax9 = fig9.add_subplot(111)
-ax9.set_title("LE and TE Displacement in $y$ with reference to the undeflected hinge line")
+ax9.set_title("LE and TE Displacement in $y$ with initial deflection, bending and twist")
 ax9.set_xlim(0, pm.span)
 ax9.vlines(pm.xlocation2 - pm.d12/2., -0.10, 0.30, linestyles="dashed", label="Actuator 1")
 ax9.plot(npCoordinates_forwards[:, 0], npCoordinates_forwards[:, 2], label=r"LE Deflection $\delta_{LE_{AP}}$", color="b")
-ax9.plot(npCoordinates_backwards[:, 0], npCoordinates_backwards[:, 2], color="b")
+# ax9.plot(npCoordinates_backwards[:, 0], npCoordinates_backwards[:, 2], color="b")
 ax9.plot(npCoordinates_forwards[:, 0], npCoordinates_forwards[:, 4], label=r"TE Deflection $\delta_{TE_{AP}}$", color="r")
-ax9.plot(npCoordinates_backwards[:, 0], npCoordinates_backwards[:, 4], color="r")
+# ax9.plot(npCoordinates_backwards[:, 0], npCoordinates_backwards[:, 4], color="r")
 ax9.grid(b=True, which='both', color='0.65', linestyle='-')
 ax9.legend()
 ax9.set_xlabel("Span ($m$)")
@@ -439,13 +441,13 @@ fig9.show()
 
 fig11 = plt.figure()
 ax11 = fig11.add_subplot(111)
-ax11.set_title("LE and TE Displacement in $z$ with reference to the undeflected hinge line")
+ax11.set_title("LE and TE Displacement in $z$ with initial deflection, bending and twist")
 ax11.set_xlim(0, pm.span)
 ax11.vlines(pm.xlocation2 - pm.d12/2., -0.5, 0.30, linestyles="dashed", label="Actuator 1")
 ax11.plot(npCoordinates_forwards[:, 0], npCoordinates_forwards[:, 1], label=r"LE Deflection $\delta_{LE_{AP}}$", color="b")
-ax11.plot(npCoordinates_backwards[:, 0], npCoordinates_backwards[:, 1], color="b")
+# ax11.plot(npCoordinates_backwards[:, 0], npCoordinates_backwards[:, 1], color="b")
 ax11.plot(npCoordinates_forwards[:, 0], npCoordinates_forwards[:, 3], label=r"TE Deflection $\delta_{TE_{AP}}$", color="r")
-ax11.plot(npCoordinates_backwards[:, 0], npCoordinates_backwards[:, 3], color="r")
+# ax11.plot(npCoordinates_backwards[:, 0], npCoordinates_backwards[:, 3], color="r")
 ax11.grid(b=True, which='both', color='0.65', linestyle='-')
 ax11.legend()
 ax11.set_xlabel("Span ($m$)")
