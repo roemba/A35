@@ -461,6 +461,7 @@ if saveFigs:
     fig6.savefig("rate_of_twist.png")
     fig7.savefig("q_max.png")
     fig8.savefig("y_displacement_cs.png")
-    fig9.savefig("LE_displacement.png")
+    fig9.savefig("LE_TE_displacement_y.png")
     fig10.savefig("Max_normal_stress.png")
+    fig11.savefig("LE_TE_displacement_z.png")
     fig12.savefig("Max_shear_stress.png")
